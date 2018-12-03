@@ -1,10 +1,10 @@
 
 # banlg
+```
 根据命令
  1.更新router配置文件
  2.创建对应组件文件结构
-## Requirements
-
+``` 
 
 ## Installation
 
