@@ -16,6 +16,7 @@ $ yarn global add banlg
 
 ## API
 # banlg  com   ?parentcom
-* `com <String>`: 将要创建组件名称
+* `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
+* 命名规则：驼峰  =>  生成的路由path 用'-'连接
 
