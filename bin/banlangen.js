@@ -9,13 +9,13 @@ if (!process.argv[2]) {
     process.exit(1);
 }
 const fileSave = require('file-save');
-const parentName = process.argv[3]
 const babelParser = require('@babel/parser')
 const t = require('@babel/types')
 const generate = require('@babel/generator').default
 const traverse = require('@babel/traverse').default
 const  uppercamelcase = require('uppercamelcase')
 const componentName = process.argv[2] 
+const parentName = process.argv[3] ? uppercamelcase(process.argv[3]) : process.argv[3]
 const ComponentName = uppercamelcase(componentName)
 const fs = require('fs')
 const path  = require('path')
@@ -44,7 +44,7 @@ function searchPath (rank) {
         }
     }
     if (!srcpath) {
-        log('[src]\t 请移到项目src目录下后再试')
+        log('[src]\t 请移到项目内后再试')
         process.exit(1)
     }
     const result =  {
@@ -142,7 +142,7 @@ if (parentName) {
                 const parent = path.findParent(p => p.isObjectProperty)
                 const properties = parent.parent.properties
                 properties.forEach(element => {
-                    if ( element.value.name === parentName) {
+                    if ( element.value && element.value.name === parentName) {
                         path.node.elements.push(property)
                         path.skip()
                     }
@@ -154,7 +154,7 @@ if (parentName) {
             ObjectExpression(path) {
                 const properties = path.node.properties
                 properties.forEach(element => {
-                    if ( element.value.name === parentName) {
+                    if ( element.value && element.value.name === parentName) {
                         path.pushContainer('properties', children)
                         path.skip()
                     }
@@ -174,17 +174,24 @@ if (parentName) {
     })
 }
 // 这样子想的 先找到最后一个 path.node.source.value  然后在插入这个之后  ： 或者  bu -- const 算了
-// traverse(ast, {
-//     ImportDeclaration(path) {
-//         if(path.node.source.value === 'vue-router') {
-//             path.insertAfter(mo)
-//             path.skip()
-//         }
-//     }
-// })
+let lastImport = null 
+traverse(ast, {
+    ImportDeclaration(path) {
+        lastImport = path.node.source.value
+    }
+})
+
+traverse(ast, {
+    ImportDeclaration(path) {
+        if(path.node.source.value === lastImport) {
+            path.insertAfter(mo)
+            path.skip()
+        }
+    }
+})
 
   // vue 拆包 import
-  ast.program.body.unshift(mo)
+//   ast.program.body.unshift(mo)
   // 正常 import
 // const specifiers = t.ImportDefaultSpecifier(t.identifier('aaaaaaxxxaad'))
 // const Declaration = t.importDeclaration([specifiers], t.stringLiteral('value'))
@@ -207,48 +214,48 @@ const Files = [
     {
         filename: '/index.js',
         content:
-            `import ${ComponentName} from './src/main'
-            export default ${ComponentName}`
+`import ${ComponentName} from './src/main'
+export default ${ComponentName}`
     },
     {
         filename: '/src/main.vue',
         content: 
-            `<template>
-                <div class="${toLowerLine(componentName)}">
-                    ${componentName}
-                </div>
-            </template>
-            <script>
-                export default {
-                    name: '${ComponentName}',
-                    data () {
-                        return {
+`<template>
+    <div class="${toLowerLine(componentName)}">
+        ${componentName}
+    </div>
+</template>
+<script>
+    export default {
+        name: '${ComponentName}',
+        data () {
+            return {
 
-                        }
-                    },
-                    created () {
+            }
+        },
+        created () {
 
-                    },
-                    methods: {
+        },
+        methods: {
 
-                    }
-                };
-            </script>
-            <style lang='scss'>
-                @import './css/${componentName}.scss'
-            </style>
-            `
+        }
+    }
+</script>
+<style lang=“scss” >
+    @import './css/${componentName}.scss';
+</style>
+`
     },
     {
         filename: `/src/css/${componentName}.scss`,
         content: 
-        `.${componentName} {
+`.${componentName} {
             
 
 
 
             
-        }
+}
         `
     },
 ]
