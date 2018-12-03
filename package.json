@@ -1,12 +1,12 @@
 {
   "bin": {
-    "blg": "./bin/banlangen.js"
+    "banlg": "./bin/banlangen.js"
   },
-  "name": "banlangen-cli",
+  "name": "banlg",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "author": "",
+  "main": "./bin/banlangen.js",
+  "author": "https://github.com/Banlangenn",
   "license": "ISC",
   "dependencies": {
     "@babel/generator": "^7.1.6",

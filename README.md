@@ -1,2 +1,22 @@
-# blg
-快捷创建文件的cli
+
+# banlg
+根据命令
+ 1.更新router配置文件
+ 2.创建对应组件文件结构
+## Requirements
+
+
+## Installation
+
+```bash
+$ npm install banlg -g
+$ yarn global add banlg
+```
+
+## API
+    
+banlg 组件名称  ?父组件名称
+
+(父组件名称可选)
+
+
