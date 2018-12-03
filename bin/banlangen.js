@@ -61,7 +61,7 @@ function searchPath (rank) {
     }
     return  result    
 }
-const currentpath = searchPath(3)
+const currentpath = searchPath(4)
 const code = fs.readFileSync(currentpath.router, 'utf8')
 const ast = babelParser.parse(code, {
     sourceType: 'module',
