@@ -242,9 +242,14 @@ const Files = [
     {
         filename: `/src/css/${componentName}.scss`,
         content: 
-        `@include b(${componentName}) {
+        `.${componentName} {
+            
 
-        }`
+
+
+            
+        }
+        `
     },
 ]
 Files.forEach(file => {
