@@ -15,7 +15,7 @@ $ yarn global add banlg
 
 ## API
     
-banlg 组件名称  ?父组件名称
+banlg com  ?parentcom
 
 (父组件名称可选)
 
