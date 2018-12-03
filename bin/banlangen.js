@@ -5,7 +5,7 @@ process.on('exit', () => {
     console.log('');
 });
 if (!process.argv[2]) {
-    log('[组件名称缺失] \t ');
+    console.log('[组件名称缺失] \t ');
     process.exit(1);
 }
 const fileSave = require('file-save');
