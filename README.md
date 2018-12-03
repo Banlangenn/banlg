@@ -15,7 +15,7 @@ $ yarn global add banlg
 
 ## API
 
-# banlg com  ?parentcom
+# banlg  com   ?parentcom
 * `com <String>`: 将要创建组件名称
 * `parentcom <String>`: 父组件名称(可选)
 
