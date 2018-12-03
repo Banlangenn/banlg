@@ -3,12 +3,16 @@
     "banlg": "./bin/banlangen.js"
   },
   "name": "banlg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "./bin/banlangen.js",
   "author": "https://github.com/Banlangenn",
   "license": "ISC",
-  "keywords": ["vue-cli", "vue", "vue-router"],
+  "keywords": [
+    "vue-cli",
+    "vue",
+    "vue-router"
+  ],
   "dependencies": {
     "@babel/generator": "^7.1.6",
     "@babel/parser": "^7.1.6",
