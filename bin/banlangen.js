@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 'use strict';
-// 重写console.log 带颜色
 process.on('exit', () => {
     console.log('');
 });
@@ -19,6 +18,7 @@ const parentName = process.argv[3] ? uppercamelcase(process.argv[3]) : process.a
 const ComponentName = uppercamelcase(componentName)
 const fs = require('fs')
 const path  = require('path')
+// 重写console.log 带颜色
 const log = info =>{console.log('\x1B[32m%s\x1B[39m',info)}
 // 大小驼峰转 中线
 function toLowerLine(str) {
@@ -28,10 +28,14 @@ function toLowerLine(str) {
   	}
 	return temp
 }
- function allpath (source) {
-    return fs.readdirSync(path.join(process.cwd(), source))
-        .filter((v) => fs.lstatSync(path.join(process.cwd(), source) + v).isDirectory())
- }
+function allpath (source) {
+    let all = []
+    try {
+        all = fs.readdirSync(path.join(process.cwd(), source))
+        .filter((v) => fs.lstatSync(path.join(process.cwd(), source) + v).isDirectory()) 
+    } catch (error) {}
+    return all
+}
 function searchPath (rank) {
     rank = rank > 4 ? 4 : rank
     let dir  = ['/', '/../', '/../../','/../../../']
@@ -49,20 +53,36 @@ function searchPath (rank) {
     }
     const result =  {
         views: srcpath + '/views',
-        router: srcpath + '/router/index.js'
+        router: srcpath + '/router'
     }
     if (!fs.existsSync(result.views)) {
-        log('[views]\t 当前项目没找到views')
+        log('[views]\t 缺少陈放组件的views文件夹')
         process.exit(1)
     }
     if (!fs.existsSync(result.router)) {
-        log('[router]\t 当前项目没找到router')
+        log('[router]\t 缺少陈放路由配置的router文件夹')
         process.exit(1)
     }
     return  result    
 }
 const currentpath = searchPath(4)
-const code = fs.readFileSync(currentpath.router, 'utf8')
+// router下是否有index.js
+const checkRouterconfig = fs.existsSync(currentpath.router + '/index.js')
+const code = (checkRouterconfig ? fs.readFileSync(currentpath.router + '/index.js', 'utf8') : null) ||`/* eslint-disable */
+import Vue from "vue";
+import Router from "vue-router";
+Vue.use(Router);
+export default new Router({
+  mode: 'history',
+  routes: [],
+  scrollBehavior(to, from) {
+    return {
+      x: 0,
+      y: 0
+    };
+  }
+});
+`
 const ast = babelParser.parse(code, {
     sourceType: 'module',
     // allowImportExportEverywhere: true,
@@ -87,12 +107,12 @@ const mo = t.variableDeclaration('const', [t.variableDeclarator(t.identifier(Com
 const property = t.objectExpression(
     [t.objectProperty(
         t.identifier('path'),
-        t.stringLiteral(toLowerLine(componentName))
+        t.stringLiteral('/'+toLowerLine(componentName))
       ),t.objectProperty(
         t.identifier('component'),
         t.identifier(ComponentName)
       )]
- )
+)
 
 // 节点有children  key ： value
 const children = t.objectProperty(
@@ -198,17 +218,11 @@ traverse(ast, {
 //   ast.program.body.unshift(Declaration)
 const output = generate(ast, {
     quotes: 'single',
-}, code)  
-
-
-fs.writeFile(currentpath.router, output.code,function(error){
-    if(error){
-        console.log(error);
-    }
-})
-log('[change] \t:'+ currentpath.router);
-
-  
+}, code)
+fileSave(currentpath.router+'/index.js')
+.write(output.code, 'utf8')
+.end('\n');
+log(`[${checkRouterconfig? 'change' : 'create'}] \tsrc/router/index.js`); 
 // 创建 文件
 const Files = [
     {
@@ -255,16 +269,15 @@ export default ${ComponentName}`
 
 
             
-}
-        `
+}`
     },
 ]
 Files.forEach(file => {
-  const filePath = path.join(currentpath.views, ComponentName + file.filename)
-  fileSave(filePath)
+    const filePath = path.join(currentpath.views, ComponentName + file.filename)
+    fileSave(filePath)
     .write(file.content, 'utf8')
     .end('\n');
-    log('[create] \t:'+ filePath)
+    log('[create] \t'+ 'src/views/'+ ComponentName + file.filename)
 })
 
 
