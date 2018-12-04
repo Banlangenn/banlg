@@ -19,7 +19,7 @@ $ yarn global add banlg
 * `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
 * 命名规则：驼峰  =>  生成的路由path 用'-'连接
-* tips ? 代表可选参数
+ tips: ? 代表可选参数
 
 ## 能做什么
 * -1根据命令行创建 组件目录并初始化文件内容
