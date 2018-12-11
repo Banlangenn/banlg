@@ -103,16 +103,22 @@ const mo = t.variableDeclaration('const', [t.variableDeclarator(t.identifier(Com
     )
 )])
 
+function generateEle(isChildren) {
+    return t.objectExpression(
+        [t.objectProperty(
+            t.identifier('path'),
+            t.stringLiteral(`${isChildren ? toLowerLine(componentName) : '/' + toLowerLine(componentName)}`)
+        ),t.objectProperty(
+            t.identifier('component'),
+            t.identifier(ComponentName)
+        )]
+    )
+}
+
 // 一级 造路由基本结构  {}
-const property = t.objectExpression(
-    [t.objectProperty(
-        t.identifier('path'),
-        t.stringLiteral('/'+toLowerLine(componentName))
-      ),t.objectProperty(
-        t.identifier('component'),
-        t.identifier(ComponentName)
-      )]
-)
+const property = generateEle(true)
+
+
 
 // 节点有children  key ： value
 const children = t.objectProperty(
@@ -187,7 +193,7 @@ if (parentName) {
     traverse(ast, {
         ArrayExpression(path) {
             if(path.parent.key.name === 'routes') {
-                path.node.elements.push(property)
+                path.node.elements.push(generateEle(false))
                 path.skip()
             }
         }
