@@ -289,9 +289,9 @@ const vueContent = hasFile(path.join(projectRoot, 'vue.bl')) ? render(fs.readFil
     ComponentName
 }) : null ||
 `<template>
-<div class="${toLowerLine(componentName)}">
-    ${componentName}
-</div>
+    <div class="${toLowerLine(componentName)}">
+        ${componentName}
+    </div>
 </template>
 <script>
 export default {
@@ -310,7 +310,7 @@ export default {
 }
 </script>
 <style lang='scss' >
-@import './css/${componentName}.scss';
+    @import './css/${componentName}.scss';
 </style>
 `
 const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'css.bl'), 'utf8') , {
@@ -347,7 +347,7 @@ export default ${ComponentName}`
 
 
 if (documentFlag) {
-    Files.pop()
+    Files.shift()
     Files[0].filename = `/src/${ComponentName}.vue`
     Files[Files.length - 1].filename =  `/src/css/${componentName}.scss`
 }
@@ -361,7 +361,3 @@ Files.forEach(file => {
     );
     
 })
-
-
-
-
