@@ -3,7 +3,7 @@
     "banlg": "./bin/banlangen.js"
   },
   "name": "banlg",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "main": "./bin/banlangen.js",
   "author": "https://github.com/Banlangenn",
