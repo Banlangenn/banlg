@@ -246,7 +246,7 @@ const introduce = t.variableDeclaration('const', [t.variableDeclarator(t.identif
         t.callExpression(
             t.import(),
             [
-                t.stringLiteral(`${documentFlag ? '@/views/' + parentName + 'src/' + ComponentName : '@/views/' + ComponentName}`)
+                t.stringLiteral(`${documentFlag ? '@/views/' + parentName + '/src/' + ComponentName : '@/views/' + ComponentName}`)
             ]
         )
     )

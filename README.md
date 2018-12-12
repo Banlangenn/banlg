@@ -28,7 +28,7 @@ $ yarn global add banlg
 * -1根据命令行创建 组件目录并初始化文件内容
 * -2按需引入组件
 * -3修改router配置（美其名曰：解放双手
-* -4router[0].path='/'   children[0].path='' 
+* -4自动区别path命名：routes[0].path='/'   children[0].path='' 
 
 ## 利于什么
 * 1.用来规范团队的 -- 组件.路由.路由路径.命名(防止某些人起名字【胡里花哨】的)
