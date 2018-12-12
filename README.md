@@ -1,10 +1,11 @@
 
 # banlg
 ```
-banlg  com  ?parentcom
+banlg  com  ?parentcom ?-t
 根据命令
  1.更新router配置文件
  2.创建对应组件文件结构
+ 3.可自定义vue和css 模板
 ``` 
 
 ## Installation
@@ -15,16 +16,19 @@ $ yarn global add banlg
 ```
 
 ## API
-# banlg  com   ?parentcom
+# banlg  com   ?parentcom   ?-t
 * `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
+* `-t`: 是否插入当前父组件文件夹(可选)
 * 命名规则：驼峰  =>  生成的路由path 用'-'连接
+* 项目根目录，（src同级）下可自定义vue.bl、css.bl模板，模板内会传入{{componentName}}、大驼峰{{ComponentName}}, 用{{}} 接收
 * tips: ? 代表可选参数
 
 ## 能做什么
 * -1根据命令行创建 组件目录并初始化文件内容
 * -2按需引入组件
 * -3修改router配置（美其名曰：解放双手
+* -4router[0].path='/'   children[0].path='' 
 
 ## 利于什么
 * 1.用来规范团队的 -- 组件.路由.路由路径.命名(防止某些人起名字【胡里花哨】的)
