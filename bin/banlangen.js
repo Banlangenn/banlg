@@ -60,18 +60,22 @@ function hasFile (filePath) {
     return fs.existsSync(filePath)
 }
 function render(template, context) {
+
     //被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
-    const tokenReg = /(\\)?\{{([^\{\}\\]+)(\\)?\}}/g;
+    var tokenReg = /(\\)?\{{([^\{\}\\]+)(\\)?\}}/g;
+
     return template.replace(tokenReg, function (word, slash1, token, slash2) {
         //如果有转义的\{或\}替换转义字符
         if (slash1 || slash2) {  
             return word.replace('\\', '');
         }
+
         // 切割 token ,实现级联的变量也可以展开
-        const variables = token.replace(/\s/g, '').split('.'); 
-        const currentObject = context;
-        const i, length, variable;
-        for (i = 0, length = variables.lenth; i < length; ++i) {
+        var variables = token.replace(/\s/g, '').split('.'); 
+        var currentObject = context;
+        var i, length, variable;
+
+        for (i = 0, length = variables.length; i < length; ++i) {
             variable = variables[i];
             currentObject = currentObject[variable];
             // 如果当前索引的对象不存在，则直接返回<没有提供此变量>。
@@ -191,6 +195,7 @@ if (parentName) {
         }
         
     })
+    // log(`[${parentName}]\t 父级路由下是否有Children\t ${isChildren}`)
     if (isChildren) {
         traverse(ast, {
             ArrayExpression(path) {
@@ -312,7 +317,7 @@ const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFil
     componentName,
     ComponentName
 }) : null ||
-`.${componentName} {
+`.${toLowerLine(componentName)} {
             
 
 
@@ -353,6 +358,5 @@ Files.forEach(file => {
     .write(file.content, 'utf8')
     .end(
         log('[create] \t' + 'src/views/' + (documentFlag ? parentName : ComponentName) + file.filename)
-    );
-    
+    );  
 })
