@@ -21,7 +21,7 @@ $ yarn global add banlg
 * `parentcom <String>`: 父组件名称(可选)
 * `-t`: 是否插入当前父组件文件夹(可选)
 * 命名规则：驼峰  =>  生成的路由path 用'-'连接
-* 项目根目录，（src同级）下可自定义vue.bl、css.bl模板，模板内会传入
+* 项目根目录，（src同级）下可自定义vue.bl、css.bl模板，模板内会传入下列三个参数，用{{xxxxxx}} 接收
 ```bash
 {
    componentName: 小驼峰组件名称,
@@ -29,7 +29,6 @@ $ yarn global add banlg
    toLowerLineCN: 中线组件名称
 }
 ```
-, 用{{xxxxxx}} 接收
 * tips: ? 代表可选参数
 
 ## 能做什么
