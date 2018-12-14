@@ -286,7 +286,8 @@ fileSave(projectPath.router +'/index.js')
 
 const vueContent = hasFile(path.join(projectRoot, 'vue.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'vue.bl'), 'utf8') , {
     componentName,
-    ComponentName
+    ComponentName,
+    toLowerLineCN: toLowerLine(componentName)
 }) : null ||
 `<template>
     <div class="${toLowerLine(componentName)}">
