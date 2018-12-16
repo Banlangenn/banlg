@@ -25,8 +25,10 @@ $ yarn global add banlg
 # banlg  -re
 * `-re <flag>`: 撤销上次操作,删除文件,复原router(只能撤销一次,并且无法回退)
 # 内部命名规范
+`
 组件名称、组件文件名称 => 大驼峰
 路由path、class类名 => '-'链接
+`
 
 ```bash
 
