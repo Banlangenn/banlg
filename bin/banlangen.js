@@ -71,9 +71,9 @@ function render(template, context) {
         }
 
         // 切割 token ,实现级联的变量也可以展开
-        var variables = token.replace(/\s/g, '').split('.'); 
-        var currentObject = context;
-        var i, length, variable;
+        const variables = token.replace(/\s/g, '').split('.'); 
+        let currentObject = context;
+        let i, length, variable;
 
         for (i = 0, length = variables.length; i < length; ++i) {
             variable = variables[i];
@@ -268,21 +268,9 @@ traverse(ast, {
     }
 })
 
-  // vue 拆包 import
-//   ast.program.body.unshift(mo)
-  // 正常 import
-// const specifiers = t.ImportDefaultSpecifier(t.identifier('aaaaaaxxxaad'))
-// const Declaration = t.importDeclaration([specifiers], t.stringLiteral('value'))
-//   ast.program.body.unshift(Declaration)
-const output = generate(ast, {
+const routerContent = generate(ast, {
     quotes: 'single',
-}, code)
-fileSave(projectPath.router +'/index.js')
-.write(output.code, 'utf8')
-.end((e)=>{
-    log(`[${checkRouterConfig ? 'change' : 'create'}] \tsrc/router/index.js`);
-});
-
+}, code).code
 
 const vueContent = hasFile(path.join(projectRoot, 'vue.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'vue.bl'), 'utf8') , {
     componentName,
@@ -325,39 +313,57 @@ const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFil
 
             
 }`
- 
-
-
 // 创建 文件
 const Files = [
     {
-        filename: '/index.js',
+        fileDir: `src/views/${ComponentName}/index.js`,
         content:
 `import ${ComponentName} from './src/main'
-export default ${ComponentName}`
+export default ${ComponentName}`,
+        action: 'create'
     },
     {
-        filename: '/src/main.vue',
-        content: vueContent
+        fileDir: `src/views/${ComponentName}/src/main.vue`,
+        content: vueContent,
+        action: 'create'
     },
     {
-        filename: `/src/css/${componentName}.scss`,
-        content: cssContent
+        fileDir: `src/router/index.js`,
+        content: routerContent,
+        action: checkRouterConfig ? 'change' : 'create'
     },
-]
+    {
+        fileDir: `src/views/${ComponentName}/src/css/${componentName}.scss`,
+        content: cssContent,
+        action: 'create'
+    }
 
+]
 
 if (documentFlag) {
     Files.shift()
-    Files[0].filename = `/src/${ComponentName}.vue`
-    Files[Files.length - 1].filename =  `/src/css/${componentName}.scss`
+    Files[0].fileDir = `src/views/${parentName}/src/${ComponentName}.vue`
+    Files[Files.length - 1].filename =  `src/views/${parentName}/src/css/${componentName}.scss`
 }
 // console.log(Files[Files.length - 1].filename =  `/src/css/${ComponentName}.scss`)
 Files.forEach(file => {
-    const filePath = documentFlag ?  path.join(projectPath.views, parentName + file.filename) : path.join(projectPath.views, ComponentName + file.filename)
-    fileSave(filePath)
+    fileSave(path.join(projectRoot, file.fileDir))
     .write(file.content, 'utf8')
     .end(
-        log('[create] \t' + 'src/views/' + (documentFlag ? parentName : ComponentName) + file.filename)
+        log(`${action}  \t${file.fileDir}`)
     );  
 })
+
+
+
+process.on('exit', () => {
+    // console.log('主进程退出');
+    // 搜集复原信息
+    // const Json = {
+    //     Files
+    // }
+    console.log(process.execPath)
+console.log(__dirname)
+    // console.log()
+    // console.dir(Json)
+});
