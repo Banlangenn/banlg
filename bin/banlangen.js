@@ -3,6 +3,7 @@
 process.on('exit', () => {
     console.log('');
 });
+
 if (!process.argv[2]) {
     console.log('[组件名称缺失] \t ');
     process.exit(1);
@@ -56,20 +57,21 @@ function searchPath (rank) {
     }
     return srcpath
 }
-function hasFile (filePath) {
-    return fs.existsSync(filePath)
+function hasFile (projectRoot,filePath) {
+    return fs.existsSync(path.join(projectRoot, filePath))
 }
-function render(template, context) {
+function readFile (projectRoot,filepath) {
+    return fs.readFileSync(path.resolve(projectRoot, filepath), 'utf-8')
+}
 
+function render(template, context) {
     //被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
     var tokenReg = /(\\)?\{{([^\{\}\\]+)(\\)?\}}/g;
-
     return template.replace(tokenReg, function (word, slash1, token, slash2) {
         //如果有转义的\{或\}替换转义字符
         if (slash1 || slash2) {  
             return word.replace('\\', '');
         }
-
         // 切割 token ,实现级联的变量也可以展开
         const variables = token.replace(/\s/g, '').split('.'); 
         let currentObject = context;
@@ -86,26 +88,19 @@ function render(template, context) {
 }
 
 // 开始
-
-
 const projectRoot = searchPath(4)
-const projectPath =  {
-    views: path.join(projectRoot, 'src/views'),
-    router: path.join(projectRoot, 'src/router')
-}
-if (!hasFile(projectPath.views)) {
+
+if (!hasFile(projectRoot, 'src/views')) {
     log('[views]\t 缺少陈放组件的views文件夹')
     process.exit(1)
 }
-if (!hasFile(projectPath.router)) {
+if (!hasFile(projectRoot, 'src/router')) {
     log('[router]\t 缺少陈放路由配置的router文件夹')
     process.exit(1)
 }
-
-// const projectPath = searchPath(4)
 // router下是否有index.js
-const checkRouterConfig = hasFile(projectPath.router + '/index.js')
-const code = (checkRouterConfig ? fs.readFileSync(projectPath.router + '/index.js', 'utf8') : null) ||`/* eslint-disable */
+const checkRouterConfig = hasFile(projectRoot, 'src/router/index.js')
+const originCode = (checkRouterConfig ? readFile(projectRoot, 'src/router/index.js') : null) ||`/* eslint-disable */
 import Vue from "vue";
 import Router from "vue-router";
 Vue.use(Router);
@@ -125,7 +120,7 @@ export default new Router({
   }
 });
 `
-const ast = babelParser.parse(code, {
+const ast = babelParser.parse(originCode, {
     sourceType: 'module',
     // allowImportExportEverywhere: true,
     plugins: [
@@ -270,9 +265,9 @@ traverse(ast, {
 
 const routerContent = generate(ast, {
     quotes: 'single',
-}, code).code
+}).code
 
-const vueContent = hasFile(path.join(projectRoot, 'vue.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'vue.bl'), 'utf8') , {
+const vueContent = hasFile(projectRoot, './vue.bl') ? render(readFile(projectRoot, 'vue.bl') , {
     componentName,
     ComponentName,
     toLowerLineCN: toLowerLine(componentName)
@@ -302,7 +297,7 @@ export default {
     @import './css/${componentName}.scss';
 </style>
 `
-const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'css.bl'), 'utf8') , {
+const cssContent = hasFile(projectRoot, 'css.bl') ? render(fs.readFile(projectRoot, './css.bl') , {
     componentName,
     ComponentName
 }) : null ||
@@ -314,7 +309,7 @@ const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFil
             
 }`
 // 创建 文件
-const Files = [
+const files = [
     {
         fileDir: `src/views/${ComponentName}/index.js`,
         content:
@@ -337,33 +332,32 @@ export default ${ComponentName}`,
         content: cssContent,
         action: 'create'
     }
-
 ]
-
 if (documentFlag) {
-    Files.shift()
-    Files[0].fileDir = `src/views/${parentName}/src/${ComponentName}.vue`
-    Files[Files.length - 1].filename =  `src/views/${parentName}/src/css/${componentName}.scss`
+    files.shift()
+    files[0].fileDir = `src/views/${parentName}/src/${ComponentName}.vue`
+    files[files.length - 1].fileDir =  `src/views/${parentName}/src/css/${componentName}.scss`
 }
-// console.log(Files[Files.length - 1].filename =  `/src/css/${ComponentName}.scss`)
-Files.forEach(file => {
-    fileSave(path.join(projectRoot, file.fileDir))
-    .write(file.content, 'utf8')
-    .end(
-        log(`${action}  \t${file.fileDir}`)
-    );  
-})
+createFile(files)
+async function createFile(files) {
+    let promiseArr = []
+    for (const file of files) {
+        promiseArr.push(
+            new Promise(function (resolve, reject) {
+                    fileSave(path.join(projectRoot, file.fileDir))
+                    .write(file.content, 'utf8')
+                    .end()
+                    .finish(()=>{
+                        log(`☺ ${file.action}\t${file.fileDir}`)
+                        resolve('data')
+                    })
+                })
+        )
+    }
+   await Promise.all(promiseArr)
+   files[files.length - 2].fileDir = originCode
+   fileSave(path.join(__dirname, './revoke.json'))
+   .write( JSON.stringify({files}))
+ }
 
 
-
-process.on('exit', () => {
-    // console.log('主进程退出');
-    // 搜集复原信息
-    // const Json = {
-    //     Files
-    // }
-    console.log(process.execPath)
-console.log(__dirname)
-    // console.log()
-    // console.dir(Json)
-});
