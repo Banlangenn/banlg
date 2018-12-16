@@ -87,6 +87,19 @@ function render(template, context) {
     })
 }
 
+function deleteFolderRecursive(path) {
+    if( fs.existsSync(path) ) {
+        fs.readdirSync(path).forEach(function(file) {
+            const curPath = path + "/" + file
+            if(fs.statSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath)
+            }
+        })
+        fs.rmdirSync(path);
+    }
+}
 // 开始
 const projectRoot = searchPath(4)
 
@@ -98,6 +111,44 @@ if (!hasFile(projectRoot, 'src/router')) {
     log('[router]\t 缺少陈放路由配置的router文件夹')
     process.exit(1)
 }
+
+
+
+
+// 撤销上次修改
+// 全部同步 
+
+if (componentName === '-re') {
+    log('进入撤销')
+    if (!hasFile(__dirname, './temporary.json')) {
+        log('[revoke]\t 暂无可撤销操作')
+        process.exit(1)
+    }
+
+    try {
+        const files = JSON.parse(readFile(__dirname, './temporary.json'))
+        if (files.record.length === 4) {
+            deleteFolderRecursive(path.join(projectRoot, `./src/views/${files.ComponentName}`))
+            log(`☺ [remove]\t  src/views/${files.ComponentName}`)
+        } else {
+            for (const file of files.record) {
+                if (file.fileName !== 'router') {
+                    fs.unlinkSync(path.join(projectRoot, file.fileDir))
+                    log(`☺ [remove]\t  ${file.fileDir}`)
+                }
+                
+            }
+        }
+        fs.writeFileSync(path.join(projectRoot, `./src/router/index.js`), files.routerCode)
+        log(`☺ [change]\t  src/router/index.js`)
+        fs.unlinkSync(path.join(__dirname, './temporary.json'))
+        process.exit(0)
+    } catch (err) {
+        log('[revoke]\t 失败!文件解析错误')
+        process.exit(1)
+    }
+}
+// 撤销上次修改
 // router下是否有index.js
 const checkRouterConfig = hasFile(projectRoot, 'src/router/index.js')
 const originCode = (checkRouterConfig ? readFile(projectRoot, 'src/router/index.js') : null) ||`/* eslint-disable */
@@ -315,21 +366,25 @@ const files = [
         content:
 `import ${ComponentName} from './src/main'
 export default ${ComponentName}`,
+        fileName:'index',
         action: 'create'
     },
     {
         fileDir: `src/views/${ComponentName}/src/main.vue`,
         content: vueContent,
+        fileName: 'main',
         action: 'create'
     },
     {
         fileDir: `src/router/index.js`,
         content: routerContent,
+        fileName: 'router',
         action: checkRouterConfig ? 'change' : 'create'
     },
     {
         fileDir: `src/views/${ComponentName}/src/css/${componentName}.scss`,
         content: cssContent,
+        fileName: 'scss',
         action: 'create'
     }
 ]
@@ -355,9 +410,13 @@ async function createFile(files) {
         )
     }
    await Promise.all(promiseArr)
-   files[files.length - 2].fileDir = originCode
-   fileSave(path.join(__dirname, './revoke.json'))
-   .write( JSON.stringify({files}))
+//    files[files.length - 2].fileDir = originCode
+   fileSave(path.join(__dirname, './temporary.json'))
+   .write( JSON.stringify({
+       routerCode:originCode,
+       ComponentName,
+       record:files
+    }))
  }
 
 
