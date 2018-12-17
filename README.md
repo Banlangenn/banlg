@@ -19,27 +19,27 @@ $ yarn global add banlg
 ```
 
 ## API
-# banlg  com   ?parentcom   ?-t
+# banlg&ensp;com&ensp;?parentcom&ensp;?-t
 * `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
-* `-t <flag>`: 是否插入当前父组件文件夹(可选)
-# banlg  -re
-* `-re <flag>`: 撤销上次操作,删除文件,复原router(只能撤销一次,并且无法回退)
-# 内部命名规范
-
+* `-t <flag>`: 是否插入当前父组件文件夹(可选)  
+  
+  
+ :blush: ? 代表可选参数tips: ? 代表可选参数)
+# banlg&ensp;-re
+* `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
+# 自定义组件模板
+项目根目录[src同级]，可自定义组件模板:`vue.bl    css.bl`，  
+模板内会传入下列变量，用{{xxxxxx}} 接收
+ * componentName: **小驼峰组件名称**,
+ * ComponentName： **大驼峰组件名称**, 
+ * toLowerLineCN: **中线组件名称**
+## 内部命名规范
 ```bash
-
-项目根目录，（src同级）下可自定义vue.bl、css.bl模板，模板内会传入下列三个参数，用{{xxxxxx}} 接收
-{
-   componentName: 小驼峰组件名称,
-   ComponentName： 大驼峰组件名称, 
-   toLowerLineCN: 中线组件名称
-}
-
 组件名称、组件文件名称 => 大驼峰
 路由path、class类名 => '-'链接
 ```
-* tips: ? 代表可选参数
+
 
 ## 能做什么
 * -1根据命令行创建 组件目录并初始化文件内容
