@@ -15,7 +15,8 @@ banlg  com  ?parentcom ?-t
 ```bash
 $ npm install banlg -g
 $ yarn global add banlg
-（mac 遇到权限问题,在安装命令前加 ：     sudo    即可）
+
+（mac 遇到权限问题,在安装命令前加  sudo 即可）
 ```
 
 ## API
