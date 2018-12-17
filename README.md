@@ -22,8 +22,8 @@ $ yarn global add banlg
 # banlg&ensp;com&ensp;?parentcom&ensp;?-t
 * `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
-* `-t <flag>`: 是否插入当前父组件文件夹(可选)
-* (tips: ? 代表可选参数tips: ? 代表可选参数)
+* `-t <flag>`: 是否插入当前父组件文件夹(可选)  
+ :blush: ? 代表可选参数tips: ? 代表可选参数)
 # banlg&ensp;-re
 * `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
 # 自定义组件模板
