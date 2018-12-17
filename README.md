@@ -23,13 +23,11 @@ $ yarn global add banlg
 * `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)
+* (tips: ? 代表可选参数tips: ? 代表可选参数)
 # banlg  -re
 * `-re <flag>`: 撤销上次操作,删除文件,复原router(只能撤销一次,并且无法回退)
-
-
-* tips: ? 代表可选参数
 # 自定义vue.bl、css.bl模板
-项目根目录[src同级]，可自定义vue.bl、css.bl模板，
+项目根目录[src同级]，可自定义模板:[vue.bl][css.bl]，
 模板内会传入下列变量，用{{xxxxxx}} 接收
  * componentName: 小驼峰组件名称,
  * ComponentName： 大驼峰组件名称, 
