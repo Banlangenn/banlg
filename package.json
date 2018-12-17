@@ -4,7 +4,7 @@
   },
   "name": "banlg",
   "version": "1.0.13",
-  "description": "",
+  "description": "命令行工具   快捷创建组件文件以及[引入文件,创建路由]",
   "main": "./bin/banlangen.js",
   "author": "https://github.com/Banlangenn",
   "license": "ISC",
