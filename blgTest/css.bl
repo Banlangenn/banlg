@@ -1,0 +1,4 @@
+.{{toLowerLineCN}} {
+    display: flex;
+
+}

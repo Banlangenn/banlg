@@ -6,6 +6,8 @@ banlg  com  ?parentcom ?-t
  1.更新router配置文件
  2.创建对应组件文件结构
  3.可自定义vue和css 模板
+ 4.可撤销上次操作,让你无后顾之忧
+
 ``` 
 
 ## Installation
@@ -20,14 +22,21 @@ $ yarn global add banlg
 * `com <String>`: 将要创建组件名称 
 * `parentcom <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)
-* 命名规则：驼峰  =>  生成的路由path 用'-'连接
-* 项目根目录，（src同级）下可自定义vue.bl、css.bl模板，模板内会传入下列三个参数，用{{xxxxxx}} 接收
+# banlg  -re
+* `-re <flag>`: 撤销上次操作,删除文件,复原router(只能撤销一次,并且无法回退)
+# 内部命名规范
+
 ```bash
+
+项目根目录，（src同级）下可自定义vue.bl、css.bl模板，模板内会传入下列三个参数，用{{xxxxxx}} 接收
 {
    componentName: 小驼峰组件名称,
    ComponentName： 大驼峰组件名称, 
    toLowerLineCN: 中线组件名称
 }
+
+组件名称、组件文件名称 => 大驼峰
+路由path、class类名 => '-'链接
 ```
 * tips: ? 代表可选参数
 
@@ -41,3 +50,4 @@ $ yarn global add banlg
 * 1.用来规范团队的 -- 组件.路由.路由路径.命名(防止某些人起名字【胡里花哨】的)
 * 2.节省一些（微微一些）人力，不用去创建文件和文件夹一节修改router配置文件
 * 3.缩减一些（微微一些）项目周期
+* 4.可撤销，让你无后顾之忧

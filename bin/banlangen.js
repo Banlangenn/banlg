@@ -3,6 +3,7 @@
 process.on('exit', () => {
     console.log('');
 });
+
 if (!process.argv[2]) {
     console.log('[组件名称缺失] \t ');
     process.exit(1);
@@ -56,25 +57,25 @@ function searchPath (rank) {
     }
     return srcpath
 }
-function hasFile (filePath) {
-    return fs.existsSync(filePath)
+function hasFile (projectRoot,filePath) {
+    return fs.existsSync(path.join(projectRoot, filePath))
 }
-function render(template, context) {
+function readFile (projectRoot, filePath) {
+    return fs.readFileSync(path.resolve(projectRoot, filePath), 'utf-8')
+}
 
+function render(template, context) {
     //被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
     var tokenReg = /(\\)?\{{([^\{\}\\]+)(\\)?\}}/g;
-
     return template.replace(tokenReg, function (word, slash1, token, slash2) {
         //如果有转义的\{或\}替换转义字符
         if (slash1 || slash2) {  
             return word.replace('\\', '');
         }
-
         // 切割 token ,实现级联的变量也可以展开
-        var variables = token.replace(/\s/g, '').split('.'); 
-        var currentObject = context;
-        var i, length, variable;
-
+        const variables = token.replace(/\s/g, '').split('.'); 
+        let currentObject = context;
+        let i, length, variable;
         for (i = 0, length = variables.length; i < length; ++i) {
             variable = variables[i];
             currentObject = currentObject[variable];
@@ -85,27 +86,70 @@ function render(template, context) {
     })
 }
 
-// 开始
-
-
-const projectRoot = searchPath(4)
-const projectPath =  {
-    views: path.join(projectRoot, 'src/views'),
-    router: path.join(projectRoot, 'src/router')
+function deleteFolderRecursive(path) {
+    if( fs.existsSync(path) ) {
+        fs.readdirSync(path).forEach(function(file) {
+            const curPath = path + "/" + file
+            if(fs.statSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath)
+            }
+        })
+        fs.rmdirSync(path);
+    }
 }
-if (!hasFile(projectPath.views)) {
+// 开始
+const projectRoot = searchPath(4)
+
+if (!hasFile(projectRoot, 'src/views')) {
     log('[views]\t 缺少陈放组件的views文件夹')
     process.exit(1)
 }
-if (!hasFile(projectPath.router)) {
+if (!hasFile(projectRoot, 'src/router')) {
     log('[router]\t 缺少陈放路由配置的router文件夹')
     process.exit(1)
 }
 
-// const projectPath = searchPath(4)
+
+
+
+// 撤销上次修改
+// 全部同步 
+
+if (componentName === '-re') {
+    if (!hasFile(__dirname, './temporary.json') || !readFile(__dirname, './temporary.json')) {
+        log('[revoke]\t 暂无可撤销操作')
+        process.exit(1)
+    }
+
+    try {
+        const files = JSON.parse(readFile(__dirname, './temporary.json'))
+        if (files.record.length === 4) {
+            deleteFolderRecursive(path.join(projectRoot, `./src/views/${files.ComponentName}`))
+            log(`☺ [removeDir]\t  src/views/${files.ComponentName}`)
+        } else {
+            for (const file of files.record) {
+                if (file.fileName !== 'router') {
+                    fs.unlinkSync(path.join(projectRoot, file.fileDir))
+                    log(`☺ [removeFile]\t  ${file.fileDir}`)
+                }
+                
+            }
+        }
+        fs.writeFileSync(path.join(projectRoot, `./src/router/index.js`), files.routerCode)
+        log(`☺ [change]\t  src/router/index.js`)
+        fs.writeFileSync(path.join(__dirname, './temporary.json'), '')
+        process.exit(0)
+    } catch (err) {
+        log('[revoke]\t 失败!文件解析错误')
+        process.exit(1)
+    }
+}
+// 撤销上次修改
 // router下是否有index.js
-const checkRouterConfig = hasFile(projectPath.router + '/index.js')
-const code = (checkRouterConfig ? fs.readFileSync(projectPath.router + '/index.js', 'utf8') : null) ||`/* eslint-disable */
+const checkRouterConfig = hasFile(projectRoot, 'src/router/index.js')
+const originCode = (checkRouterConfig ? readFile(projectRoot, 'src/router/index.js') : null) ||`/* eslint-disable */
 import Vue from "vue";
 import Router from "vue-router";
 Vue.use(Router);
@@ -125,7 +169,7 @@ export default new Router({
   }
 });
 `
-const ast = babelParser.parse(code, {
+const ast = babelParser.parse(originCode, {
     sourceType: 'module',
     // allowImportExportEverywhere: true,
     plugins: [
@@ -268,27 +312,18 @@ traverse(ast, {
     }
 })
 
-  // vue 拆包 import
-//   ast.program.body.unshift(mo)
-  // 正常 import
-// const specifiers = t.ImportDefaultSpecifier(t.identifier('aaaaaaxxxaad'))
-// const Declaration = t.importDeclaration([specifiers], t.stringLiteral('value'))
-//   ast.program.body.unshift(Declaration)
-const output = generate(ast, {
+const routerContent = generate(ast, {
     quotes: 'single',
-}, code)
-fileSave(projectPath.router +'/index.js')
-.write(output.code, 'utf8')
-.end((e)=>{
-    log(`[${checkRouterConfig ? 'change' : 'create'}] \tsrc/router/index.js`);
-});
+}).code
 
 
-const vueContent = hasFile(path.join(projectRoot, 'vue.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'vue.bl'), 'utf8') , {
+
+const renderObject = {
     componentName,
     ComponentName,
     toLowerLineCN: toLowerLine(componentName)
-}) : null ||
+}
+const vueContent = hasFile(projectRoot, './vue.bl') ? render(readFile(projectRoot, './vue.bl') , renderObject) : null ||
 `<template>
     <div class="${toLowerLine(componentName)}">
         ${componentName}
@@ -314,10 +349,7 @@ export default {
     @import './css/${componentName}.scss';
 </style>
 `
-const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFileSync(path.join(projectRoot, 'css.bl'), 'utf8') , {
-    componentName,
-    ComponentName
-}) : null ||
+const cssContent = hasFile(projectRoot, './css.bl') ? render(readFile(projectRoot, './css.bl') , renderObject) : null ||
 `.${toLowerLine(componentName)} {
             
 
@@ -325,39 +357,64 @@ const cssContent = hasFile(path.join(projectRoot, 'css.bl')) ? render(fs.readFil
 
             
 }`
- 
-
-
 // 创建 文件
-const Files = [
+const files = [
     {
-        filename: '/index.js',
+        fileDir: `src/views/${ComponentName}/index.js`,
         content:
 `import ${ComponentName} from './src/main'
-export default ${ComponentName}`
+export default ${ComponentName}`,
+        fileName:'index',
+        action: 'create'
     },
     {
-        filename: '/src/main.vue',
-        content: vueContent
+        fileDir: `src/views/${ComponentName}/src/main.vue`,
+        content: vueContent,
+        fileName: 'main',
+        action: 'create'
     },
     {
-        filename: `/src/css/${componentName}.scss`,
-        content: cssContent
+        fileDir: `src/router/index.js`,
+        content: routerContent,
+        fileName: 'router',
+        action: checkRouterConfig ? 'change' : 'create'
     },
+    {
+        fileDir: `src/views/${ComponentName}/src/css/${componentName}.scss`,
+        content: cssContent,
+        fileName: 'scss',
+        action: 'create'
+    }
 ]
-
-
 if (documentFlag) {
-    Files.shift()
-    Files[0].filename = `/src/${ComponentName}.vue`
-    Files[Files.length - 1].filename =  `/src/css/${componentName}.scss`
+    files.shift()
+    files[0].fileDir = `src/views/${parentName}/src/${ComponentName}.vue`
+    files[files.length - 1].fileDir =  `src/views/${parentName}/src/css/${componentName}.scss`
 }
-// console.log(Files[Files.length - 1].filename =  `/src/css/${ComponentName}.scss`)
-Files.forEach(file => {
-    const filePath = documentFlag ?  path.join(projectPath.views, parentName + file.filename) : path.join(projectPath.views, ComponentName + file.filename)
-    fileSave(filePath)
-    .write(file.content, 'utf8')
-    .end(
-        log('[create] \t' + 'src/views/' + (documentFlag ? parentName : ComponentName) + file.filename)
-    );  
-})
+createFile(files)
+async function createFile(files) {
+    let promiseArr = []
+    for (const file of files) {
+        promiseArr.push(
+            new Promise(function (resolve, reject) {
+                    fileSave(path.join(projectRoot, file.fileDir))
+                    .write(file.content, 'utf8')
+                    .end()
+                    .finish(()=>{
+                        log(`☺ ${file.action}\t${file.fileDir}`)
+                        resolve('data')
+                    })
+                })
+        )
+    }
+   await Promise.all(promiseArr)
+//    files[files.length - 2].fileDir = originCode
+   fileSave(path.join(__dirname, './temporary.json'))
+   .write( JSON.stringify({
+       routerCode:originCode,
+       ComponentName,
+       record:files
+    }))
+ }
+
+
