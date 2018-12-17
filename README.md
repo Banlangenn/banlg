@@ -29,14 +29,11 @@ $ yarn global add banlg
 
 * tips: ? 代表可选参数
 # 自定义vue.bl、css.bl模板
-``
 项目根目录[src同级]，可自定义vue.bl、css.bl模板，
 模板内会传入下列变量，用{{xxxxxx}} 接收
-   componentName: 小驼峰组件名称,
-   ComponentName： 大驼峰组件名称, 
-   toLowerLineCN: 中线组件名称
-``
-
+ * componentName: 小驼峰组件名称,
+ * ComponentName： 大驼峰组件名称, 
+ * toLowerLineCN: 中线组件名称
 ## 内部命名规范
 ```bash
 组件名称、组件文件名称 => 大驼`峰
