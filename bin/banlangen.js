@@ -60,8 +60,8 @@ function searchPath (rank) {
 function hasFile (projectRoot,filePath) {
     return fs.existsSync(path.join(projectRoot, filePath))
 }
-function readFile (projectRoot,filepath) {
-    return fs.readFileSync(path.resolve(projectRoot, filepath), 'utf-8')
+function readFile (projectRoot, filePath) {
+    return fs.readFileSync(path.resolve(projectRoot, filePath), 'utf-8')
 }
 
 function render(template, context) {
@@ -76,7 +76,6 @@ function render(template, context) {
         const variables = token.replace(/\s/g, '').split('.'); 
         let currentObject = context;
         let i, length, variable;
-
         for (i = 0, length = variables.length; i < length; ++i) {
             variable = variables[i];
             currentObject = currentObject[variable];
@@ -119,8 +118,7 @@ if (!hasFile(projectRoot, 'src/router')) {
 // 全部同步 
 
 if (componentName === '-re') {
-    log('进入撤销')
-    if (!hasFile(__dirname, './temporary.json')) {
+    if (!hasFile(__dirname, './temporary.json') || !readFile(__dirname, './temporary.json')) {
         log('[revoke]\t 暂无可撤销操作')
         process.exit(1)
     }
@@ -129,19 +127,19 @@ if (componentName === '-re') {
         const files = JSON.parse(readFile(__dirname, './temporary.json'))
         if (files.record.length === 4) {
             deleteFolderRecursive(path.join(projectRoot, `./src/views/${files.ComponentName}`))
-            log(`☺ [remove]\t  src/views/${files.ComponentName}`)
+            log(`☺ [removeDir]\t  src/views/${files.ComponentName}`)
         } else {
             for (const file of files.record) {
                 if (file.fileName !== 'router') {
                     fs.unlinkSync(path.join(projectRoot, file.fileDir))
-                    log(`☺ [remove]\t  ${file.fileDir}`)
+                    log(`☺ [removeFile]\t  ${file.fileDir}`)
                 }
                 
             }
         }
         fs.writeFileSync(path.join(projectRoot, `./src/router/index.js`), files.routerCode)
         log(`☺ [change]\t  src/router/index.js`)
-        fs.unlinkSync(path.join(__dirname, './temporary.json'))
+        fs.writeFileSync(path.join(__dirname, './temporary.json'), '')
         process.exit(0)
     } catch (err) {
         log('[revoke]\t 失败!文件解析错误')
@@ -318,11 +316,14 @@ const routerContent = generate(ast, {
     quotes: 'single',
 }).code
 
-const vueContent = hasFile(projectRoot, './vue.bl') ? render(readFile(projectRoot, 'vue.bl') , {
+
+
+const renderObject = {
     componentName,
     ComponentName,
     toLowerLineCN: toLowerLine(componentName)
-}) : null ||
+}
+const vueContent = hasFile(projectRoot, './vue.bl') ? render(readFile(projectRoot, './vue.bl') , renderObject) : null ||
 `<template>
     <div class="${toLowerLine(componentName)}">
         ${componentName}
@@ -348,10 +349,7 @@ export default {
     @import './css/${componentName}.scss';
 </style>
 `
-const cssContent = hasFile(projectRoot, 'css.bl') ? render(fs.readFile(projectRoot, './css.bl') , {
-    componentName,
-    ComponentName
-}) : null ||
+const cssContent = hasFile(projectRoot, './css.bl') ? render(readFile(projectRoot, './css.bl') , renderObject) : null ||
 `.${toLowerLine(componentName)} {
             
 
