@@ -24,7 +24,7 @@ $ yarn global add banlg
 * `parentcom <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)
 * (tips: ? 代表可选参数tips: ? 代表可选参数)
-# banlg  -re
+# banlg&ensp;-re
 * `-re <flag>`: 撤销上次操作,删除文件,复原router( **只能撤销一次,并且无法回退**)
 # 自定义组件模板
 项目根目录[src同级]，可自定义组件模板:`vue.bl    css.bl`，  
