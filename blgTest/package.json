@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node ./../banlg/bin/banlangen.js  banLanGen",
-    "test1": "node ./../banlg/bin/banlangen.js  blgChildren  banLanGen",
-    "test2": "node ./../banlg/bin/banlangen.js  blgChildren1  banLanGen -t",
-    "test4": "node ./../banlg/bin/banlangen.js  blgChildren2  banLanGen -t",
-    "test5": "node ./../banlg/bin/banlangen.js  blgChildren2",
-    "test3": "node ./../banlg/bin/banlangen.js  blgChildren  baLanGen -t",
-    "revoke": "node ./../banlg/bin/banlangen.js  -re" 
+    "test": "node ./../bin/banlangen.js  banLanGen",
+    "test1": "node ./../bin/banlangen.js  blgChildren  banLanGen",
+    "test2": "node ./../bin/banlangen.js  blgChildren1  banLanGen -t",
+    "test4": "node ./../bin/banlangen.js  blgChildren2  banLanGen -t",
+    "test5": "node ./../bin/banlangen.js  blgChildren2",
+    "test3": "node ./../bin/banlangen.js  blgChildren  baLanGen -t",
+    "revoke": "node ./../bin/banlangen.js  -re" 
   },
   "author": "",
   "license": "ISC"
