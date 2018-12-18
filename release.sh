@@ -17,7 +17,7 @@ then
 
   # commit
   git add -A
-  git commit -m "[build] $VERSION"
+  git commit -m "[Release] $VERSION"
 
 
   # publish
@@ -28,6 +28,7 @@ then
   then
     npm publish --tag beta
   else
+    npm version patch
     npm publish
   fi
 fi
