@@ -125,6 +125,10 @@ if (componentName === '-re') {
 
     try {
         const files = JSON.parse(readFile(__dirname, './temporary.json'))
+        if (files.projectRoot !== projectRoot) {
+            log('[revoke]\t 当前项目暂无可撤销操作')
+            process.exit(1)
+        }
         if (files.record.length === 4) {
             deleteFolderRecursive(path.join(projectRoot, `./src/views/${files.ComponentName}`))
             log(`☺ [removeDir]\t  src/views/${files.ComponentName}`)
@@ -413,7 +417,8 @@ async function createFile(files) {
    .write( JSON.stringify({
        routerCode:originCode,
        ComponentName,
-       record:files
+       record:files,
+       projectRoot
     }))
  }
 

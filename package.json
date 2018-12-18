@@ -3,15 +3,19 @@
     "banlg": "./bin/banlangen.js"
   },
   "name": "banlg",
-  "version": "1.0.16",
-  "description": "",
+  "version": "1.0.1",
+  "description": "命令行工具   快捷创建组件文件以及[引入文件,创建路由]",
   "main": "./bin/banlangen.js",
+  "scripts": {
+    "release": "sh release.sh"
+  },
   "author": "https://github.com/Banlangenn",
   "license": "ISC",
   "keywords": [
     "vue-cli",
     "vue",
-    "vue-router"
+    "vue-router",
+    "node"
   ],
   "dependencies": {
     "@babel/generator": "^7.1.6",
