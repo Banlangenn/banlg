@@ -1,5 +1,5 @@
-# git checkout master
-# git merge dev
+git checkout master
+git merge dev
 
 #!/usr/bin/env sh
 set -e
@@ -20,7 +20,10 @@ then
   git commit -m "[build] $VERSION"
 
 
-  
+  # publish
+  git push 
+  git checkout dev
+
   if [[ $VERSION =~ "beta" ]]
   then
     npm publish --tag beta
