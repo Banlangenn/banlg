@@ -1,6 +1,6 @@
 {
   "name": "banlgtst",
-  "version": "1.0.0",
+  "version": "1.0.8",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "test5": "node ./../bin/banlangen.js  blgChildren2",
     "test3": "node ./../bin/banlangen.js  blgChildren  baLanGen -t",
     "revoke": "node ./../bin/banlangen.js  -re",
-    "help": "node ./../bin/banlangen.js  --help" 
+    "help": "node ./../bin/banlangen.js  --help"
   },
   "author": "",
   "license": "ISC"
