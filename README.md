@@ -34,23 +34,24 @@ $ yarn global add banlg
  * ComponentName：大驼峰**组件**名称, 
  * toLowerLineCN: 中线**组件**名称
  * 例如：组件名称(banLanGen)：=> BanLanGen => banLanGen => ban-lan-gen
+ ```
+vue模板例子（css亦是如此）：
+   <template>
+       <div class="{{toLowerLineCN}}"></div>
+   </template>
+   <script>
+   export default {
+       name: '{{ComponentName}}',
+   }
+   </script>
+   <style lang='scss' >
+       @import './css/{{componentName}}.scss';
+   </style>
+ ```
 ## 内部命名规范
 ```bash
 组件名称、组件文件名称 => 大驼峰
 路由path、class类名 => '-'链接
-
-vue模板例子（css亦是如此）：
-<template>
-    <div class="{{toLowerLineCN}}"></div>
-</template>
-<script>
-export default {
-    name: '{{ComponentName}}',
-}
-</script>
-<style lang='scss' >
-    @import './css/{{componentName}}.scss';
-</style>
 ```
 
 
