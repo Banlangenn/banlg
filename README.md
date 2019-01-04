@@ -33,7 +33,7 @@ $ yarn global add banlg
  * componentName: 小驼峰**组件**名称,
  * ComponentName：大驼峰**组件**名称, 
  * toLowerLineCN: 中线**组件**名称
- * 例如：组件名称(banLanGen)：=> BanLanGen => banLanGen => ban-lan-gen
+ * 例如：组件名称(banLanGen)：=> banLanGen => BanLanGen => ban-lan-gen
  ```
 vue模板例子（css亦是如此）：
    <template>
