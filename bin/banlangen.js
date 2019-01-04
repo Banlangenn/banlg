@@ -99,6 +99,31 @@ function deleteFolderRecursive(path) {
         fs.rmdirSync(path);
     }
 }
+
+// 添加help命令
+if (componentName === '--help') {
+    // Usage: yarn [command] [flags]
+    console.log(`
+    Usage: banlg [command] [flags]
+    Commands:
+    banlg comName ?parentComName ?-t
+        comName <String>: 将要创建组件名称
+        parentComName <String>: 父组件名称(可选)
+        -t <flag>: 是否插入当前父组件文件夹(可选)
+    banlg -re
+        撤销上次操作😊删除文件,复原router( 只能撤销一次,并且无法回退)
+    `)
+
+    // banlg --version
+    // 输出当前版本号
+    process.exit(0)
+}
+
+
+
+
+
+
 // 开始
 const projectRoot = searchPath(4)
 
