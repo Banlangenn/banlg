@@ -1,7 +1,7 @@
 
 # banlg
 ```
-banlg  com  ?parentcom ?-t
+banlg  comName  ?parentComName ?-t
 根据命令
  1.更新router配置文件
  2.创建对应组件文件结构
@@ -19,25 +19,38 @@ $ yarn global add banlg
 ```
 
 ## API
-# banlg&ensp;com&ensp;?parentcom&ensp;?-t
-* `com <String>`: 将要创建组件名称 
-* `parentcom <String>`: 父组件名称(可选)
+## banlg&ensp;comName&ensp;?parentComName;?-t
+* `comName <String>`: 将要创建组件名称 
+* `parentComName <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)  
-  
-  
+
  :blush: ? 代表可选参数
-# banlg&ensp;-re
+## banlg&ensp;-re
 * `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
-# 自定义组件模板
+## 自定义组件模板
 项目根目录[src同级]，可自定义组件模板:`vue.bl    css.bl`，  
 模板内会传入下列变量，用{{xxxxxx}} 接收
  * componentName: 小驼峰**组件**名称,
  * ComponentName：大驼峰**组件**名称, 
  * toLowerLineCN: 中线**组件**名称
+ * 例如：组件名称(banLanGen)：=> BanLanGen => banLanGen => ban-lan-gen
 ## 内部命名规范
 ```bash
 组件名称、组件文件名称 => 大驼峰
 路由path、class类名 => '-'链接
+
+vue模板例子（css亦是如此）：
+<template>
+    <div class="{{toLowerLineCN}}"></div>
+</template>
+<script>
+export default {
+    name: '{{ComponentName}}',
+}
+</script>
+<style lang='scss' >
+    @import './css/{{componentName}}.scss';
+</style>
 ```
 
 
