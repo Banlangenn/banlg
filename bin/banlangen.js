@@ -19,86 +19,23 @@ const parentName = process.argv[3] ? uppercamelcase(process.argv[3]) : process.a
 const ComponentName = uppercamelcase(componentName)
 const fs = require('fs')
 const path  = require('path')
-const documentFlag =  process.argv[4] &&  process.argv[4] === '-t'
-
+const Utils =  require('./Utils')
+const isInsertParent = process.argv[4] && process.argv[4] === '-t'
 // util
 // 重写console.log 带颜色
-const log = info =>{console.log('\x1B[32m%s\x1B[39m',info)}
+const log = Utils.log
 // 大小驼峰转 中线
-function toLowerLine(str) {
-	let temp = str.replace(/([A-Z])/g,"-$1").toLowerCase()
-  	if (temp.slice(0,1) === '-') { //如果首字母是大写，执行replace时会多一个_，这里需要去掉
-  		temp = temp.slice(1)
-  	}
-	return temp
-}
-function allpath (source) {
-    let all = []
-    try {
-        all = fs.readdirSync(path.join(process.cwd(), source))
-        .filter((v) => fs.lstatSync(path.join(process.cwd(), source) + v).isDirectory()) 
-    } catch (error) {}
-    return all
-}
-function searchPath (rank) {
-    rank = rank > 4 ? 4 : rank
-    let dir  = ['/', '/../', '/../../','/../../../']
-    dir = dir.slice(0,rank)
-    let srcpath = null
-    for (const v of dir) {
-        if (allpath(v).includes('src')) {
-            srcpath = path.join(process.cwd(), v)
-            break
-        }
-    }
-    if (!srcpath) {
-        log('[src]\t 请移到项目内后再试')
-        process.exit(1)
-    }
-    return srcpath
-}
-function hasFile (projectRoot,filePath) {
-    return fs.existsSync(path.join(projectRoot, filePath))
-}
-function readFile (projectRoot, filePath) {
-    return fs.readFileSync(path.resolve(projectRoot, filePath), 'utf-8')
-}
-
-function render(template, context) {
-    //被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
-    var tokenReg = /(\\)?\{{([^\{\}\\]+)(\\)?\}}/g;
-    return template.replace(tokenReg, function (word, slash1, token, slash2) {
-        //如果有转义的\{或\}替换转义字符
-        if (slash1 || slash2) {  
-            return word.replace('\\', '');
-        }
-        // 切割 token ,实现级联的变量也可以展开
-        const variables = token.replace(/\s/g, '').split('.'); 
-        let currentObject = context;
-        let i, length, variable;
-        for (i = 0, length = variables.length; i < length; ++i) {
-            variable = variables[i];
-            currentObject = currentObject[variable];
-            // 如果当前索引的对象不存在，则直接返回<没有提供此变量>。
-            if (currentObject === undefined || currentObject === null) return '<没有提供此变量>';
-        }
-        return currentObject;
-    })
-}
-
-function deleteFolderRecursive(path) {
-    if( fs.existsSync(path) ) {
-        fs.readdirSync(path).forEach(function(file) {
-            const curPath = path + "/" + file
-            if(fs.statSync(curPath).isDirectory()) { // recurse
-                deleteFolderRecursive(curPath);
-            } else { // delete file
-                fs.unlinkSync(curPath)
-            }
-        })
-        fs.rmdirSync(path);
-    }
-}
+const toLowerLine = Utils.toLowerLine
+// 查找 src文件
+const searchPath = Utils.searchPath
+// 是否有这个文件
+const hasFile = Utils.hasFile
+// 读取这个文件
+const readFile = Utils.readFile
+// 字符串模板
+const render = Utils.render
+// 删除文件
+const deleteFolderRecursive = Utils.deleteFolderRecursive
 
 // 添加help命令
 if (componentName === '--help') {
@@ -119,8 +56,10 @@ if (componentName === '--help') {
     process.exit(0)
 }
 
-
-
+if (/^-.*/.test(componentName)) {
+    log(`${componentName}\t暂未提供 [${componentName}] API`)
+    process.exit(0)
+}
 
 
 
@@ -172,13 +111,14 @@ if (componentName === '-re') {
         process.exit(0)
     } catch (err) {
         log('[revoke]\t 失败!文件解析错误')
+        fs.writeFileSync(path.join(__dirname, './temporary.json'), '')
         process.exit(1)
     }
 }
 // 撤销上次修改
 // router下是否有index.js
-const checkRouterConfig = hasFile(projectRoot, 'src/router/index.js')
-const originCode = (checkRouterConfig ? readFile(projectRoot, 'src/router/index.js') : null) ||`/* eslint-disable */
+const checkRouterFile = hasFile(projectRoot, 'src/router/index.js')
+const originCode = (checkRouterFile ? readFile(projectRoot, 'src/router/index.js') : null) ||`/* eslint-disable */
 import Vue from "vue";
 import Router from "vue-router";
 Vue.use(Router);
@@ -198,6 +138,9 @@ export default new Router({
   }
 });
 `
+
+
+// updataFile
 const ast = babelParser.parse(originCode, {
     sourceType: 'module',
     // allowImportExportEverywhere: true,
@@ -220,18 +163,7 @@ function generateEl(isChildren = true, isFirst = false) {
     )
 }
 
-// hasFile()
 
-// // 一级 造路由基本结构  {}  两个地方用到
-// const routerProperty = generateEl()
-
-
-
-// // 节点有children  key ： value
-// const children  = t.objectProperty(
-//     t.identifier('children'),
-//     t.arrayExpression([routerProperty])
-// )
 
 //  父组件命令行 有 但是没找到
 let  noParent = true
@@ -319,7 +251,7 @@ const introduce = t.variableDeclaration('const', [t.variableDeclarator(t.identif
         t.callExpression(
             t.import(),
             [
-                t.stringLiteral(`${documentFlag ? '@/views/' + parentName + '/src/' + ComponentName : '@/views/' + ComponentName}`)
+                t.stringLiteral(`${isInsertParent ? '@/views/' + parentName + '/src/' + ComponentName : '@/views/' + ComponentName}`)
             ]
         )
     )
@@ -386,18 +318,11 @@ const cssContent = hasFile(projectRoot, './css.bl') ? render(readFile(projectRoo
 
             
 }`
-// 创建 文件
+
+
 const files = [
     {
-        fileDir: `src/views/${ComponentName}/index.js`,
-        content:
-`import ${ComponentName} from './src/main'
-export default ${ComponentName}`,
-        fileName:'index',
-        action: 'create'
-    },
-    {
-        fileDir: `src/views/${ComponentName}/src/main.vue`,
+        fileDir: isInsertParent ? `src/views/${parentName}/src/${ComponentName}.vue` : `src/views/${ComponentName}/src/main.vue`,
         content: vueContent,
         fileName: 'main',
         action: 'create'
@@ -406,20 +331,26 @@ export default ${ComponentName}`,
         fileDir: `src/router/index.js`,
         content: routerContent,
         fileName: 'router',
-        action: checkRouterConfig ? 'change' : 'create'
+        action: checkRouterFile ? 'change' : 'create'
     },
     {
-        fileDir: `src/views/${ComponentName}/src/css/${componentName}.scss`,
+        fileDir: isInsertParent ? `src/views/${parentName}/src/css/${componentName}.scss` : `src/views/${ComponentName}/src/css/${componentName}.scss`,
         content: cssContent,
         fileName: 'scss',
         action: 'create'
     }
 ]
-if (documentFlag) {
-    files.shift()
-    files[0].fileDir = `src/views/${parentName}/src/${ComponentName}.vue`
-    files[files.length - 1].fileDir =  `src/views/${parentName}/src/css/${componentName}.scss`
-}
+!isInsertParent && files.push({
+    fileDir: `src/views/${ComponentName}/index.js`,
+    content:
+`import ${ComponentName} from './src/main'
+export default ${ComponentName}`,
+    fileName:'index',
+    action: 'create'
+})
+
+
+// 可以把  三个content 分开
 createFile(files)
 async function createFile(files) {
     let promiseArr = []
