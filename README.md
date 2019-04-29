@@ -24,16 +24,15 @@ $ yarn global add banlg
 ## banlg&ensp;comName&ensp;?parentComName&ensp;?-t
 * `comName <String>`: 将要创建组件名称 
 * `parentComName <String>`: 父组件名称(可选)
-* `-t <flag>`: 是否插入当前父组件文件夹(可选)  
-## 命令是和路由关系对应的
+* `-t <flag>`: 是否插入当前父组件文件夹(可选) 
+ :blush: ? 代表可选参数
+### 命令是和路由关系对应的
 ```js
 banlg comName  //（直接建立路由和组件文件和文件文件夹）
 banlg comName parentComName  //（建立parentComName  的 comName 子路由）
 banlg comName parentComName 
  // 创建parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边
 ```
-
- :blush: ? 代表可选参数
 ## banlg&ensp;-re
 * `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
 ## 自定义组件模板
