@@ -27,20 +27,10 @@ $ yarn global add banlg
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)  
 ## 命令是和路由关系对应的
 ```js
-banlg&ensp; comName  //（直接建立路由和组件文件和文件文件夹）
-banlg&ensp; comName parentComName  //（建立parentComName  的 comName 子路由）
-banlg&ensp; comName&ensp; parentComName&ensp; -t //（建立parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边）
-```
-
-
-parentComName  你的父组件名称 （可选的）
--t    子路由文件是否插入父组件文件夹（可选的）
-: 这个命令  parentComName （ 父组件是可选的）-t  （也是可选的）
-并且这个命令是和路由关系对应的
-```js
 banlg comName  //（直接建立路由和组件文件和文件文件夹）
 banlg comName parentComName  //（建立parentComName  的 comName 子路由）
-banlg comName parentComName  //（建立parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边）
+banlg comName parentComName 
+ // 创建parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边
 ```
 
  :blush: ? 代表可选参数
