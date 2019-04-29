@@ -30,8 +30,8 @@ $ yarn global add banlg
 ```js
 banlg comName  //（直接建立路由和组件文件和文件文件夹）
 banlg comName parentComName  //（建立parentComName  的 comName 子路由）
-banlg comName parentComName 
- // 创建parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边
+banlg comName parentComName -t
+ //（创建parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边）
 ```
 ## banlg&ensp;-re
 * `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
