@@ -33,11 +33,8 @@ banlg comName parentComName  //（建立parentComName  的 comName 子路由
 banlg comName parentComName -t
  //（创建parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边）
 ```
-*  例如 
-*banlg&ensp;  a&ensp; （：创建 A组件）
-*banlg &ensp;b &ensp;a &ensp;（：创建 A 组件的 子路由 B组件）
 ## banlg&ensp;-re
-* `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
+ `-re <flag>`: 撤销上次操作:blush:删除文件,复原router( **只能撤销一次,并且无法回退**)
 ## 自定义组件模板
 项目根目录[src同级]，可自定义组件模板:`vue.bl    css.bl`，  
 模板内会传入下列变量，用{{xxxxxx}} 接收
