@@ -21,10 +21,11 @@ $ yarn global add banlg
 ```
 
 ## API
-## banlg&ensp;comName&ensp;?parentComName&ensp;?-t :blush: ? 代表可选参数
+## banlg&ensp;comName&ensp;?parentComName&ensp;
 * `comName <String>`: 将要创建组件名称 
 * `parentComName <String>`: 父组件名称(可选)
-* `-t <flag>`: 是否插入当前父组件文件夹(可选) 
+* `-t <flag>`: 是否插入当前父组件文件夹(可选)  
+? 代表可选参数
 ### 命令和路由是有对应关系的
 ```js
 banlg comName  //（直接建立路由和组件文件和文件文件夹）
