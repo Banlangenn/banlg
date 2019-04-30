@@ -15,12 +15,23 @@ const generate = require('@babel/generator').default
 const traverse = require('@babel/traverse').default
 const uppercamelcase = require('uppercamelcase')
 const componentName = process.argv[2] 
-const parentName = process.argv[3] ? uppercamelcase(process.argv[3]) : process.argv[3]
+const parentName = process.argv[3] && !process.argv[3].startsWith('-')? uppercamelcase(process.argv[3]) : false
 const ComponentName = uppercamelcase(componentName)
 const fs = require('fs')
 const path  = require('path')
 const Utils =  require('./Utils')
 const isInsertParent = process.argv[4] && process.argv[4] === '-t'
+const metaParam = getMeta()
+function getMeta() {
+    const arr = process.argv.slice(3)
+    //  会主动吧  引号 去掉
+    for (const iterator of arr) {
+        if (iterator.startsWith('-m')) {
+            return iterator.slice(2)
+        }
+    }
+   return false
+}
 // util
 // 重写console.log 带颜色
 const log = Utils.log
@@ -35,18 +46,18 @@ const readFile = Utils.readFile
 // 字符串模板
 const render = Utils.render
 // 删除文件
-const deleteFolderRecursive = Utils.deleteFolderRecursive
-
+const deleteFolderRecursive =  Utils.deleteFolderRecursive
 // 添加help命令
 if (componentName === '--help') {
     // Usage: yarn [command] [flags]
-    console.log(`
+    log(`
     Usage: banlg [command] [flags]
     Commands:
-    banlg comName ?parentComName ?-t
+    banlg comName ?parentComName ?-t ?-m<message>
         comName <String>: 将要创建组件名称
         parentComName <String>: 父组件名称(可选)
         -t <flag>: 是否插入当前父组件文件夹(可选)
+        -m <flag>: 添加 meta  属性
     banlg -re
         撤销上次操作😊删除文件,复原router( 只能撤销一次,并且无法回退)
     `)
@@ -55,14 +66,6 @@ if (componentName === '--help') {
     // 输出当前版本号
     process.exit(0)
 }
-
-if (/^-.*/.test(componentName)) {
-    log(`${componentName}\t暂未提供 [${componentName}] API`)
-    process.exit(0)
-}
-
-
-
 // 开始
 const projectRoot = searchPath(4)
 
@@ -93,10 +96,13 @@ if (componentName === '-re') {
             log('[revoke]\t 当前项目暂无可撤销操作')
             process.exit(1)
         }
+        // 把真个文件夹删除了
         if (files.record.length === 4) {
+            // log(deleteFolderRecursive)
             deleteFolderRecursive(path.join(projectRoot, `./src/views/${files.ComponentName}`))
             log(`☺ [removeDir]\t  src/views/${files.ComponentName}`)
         } else {
+            // 删除 文件
             for (const file of files.record) {
                 if (file.fileName !== 'router') {
                     fs.unlinkSync(path.join(projectRoot, file.fileDir))
@@ -110,11 +116,24 @@ if (componentName === '-re') {
         fs.writeFileSync(path.join(__dirname, './temporary.json'), '')
         process.exit(0)
     } catch (err) {
+        log(err)
         log('[revoke]\t 失败!文件解析错误')
         fs.writeFileSync(path.join(__dirname, './temporary.json'), '')
         process.exit(1)
     }
 }
+
+//  检查命令的 合法性
+if (/^-.*/.test(componentName)) {
+    log(`${componentName}\t暂未提供 [${componentName}] API`)
+    process.exit(0)
+}
+if (/[^\w]/.test(componentName)) {
+    log(`${componentName}\t胡里花哨的组件命名是不允许的`)
+    process.exit(0)
+}
+//  检查命令的 合法性
+// --------------------------
 // 撤销上次修改
 // router下是否有index.js
 const checkRouterFile = hasFile(projectRoot, 'src/router/index.js')
@@ -151,23 +170,30 @@ const ast = babelParser.parse(originCode, {
 })
 
 // 强依赖 当前环境
+//  生成的 {}  是不是 子路由    是不是第一个 路由 
 function generateEl(isChildren = true, isFirst = false) {
-    return t.objectExpression(
-        [t.objectProperty(
-            t.identifier('path'),
-            t.stringLiteral(`${isChildren ? (isFirst ? '' : toLowerLine(componentName)) : ( isFirst ? '/' : '/' + toLowerLine(componentName))}`)
-        ),t.objectProperty(
-            t.identifier('component'),
-            t.identifier(ComponentName)
-        )]
-    )
+    const propertyArray =  [t.objectProperty(
+        t.identifier('path'),
+        t.stringLiteral(`${isChildren ? (isFirst ? '' : toLowerLine(componentName)) : ( isFirst ? '/' : '/' + toLowerLine(componentName))}`)
+    ),t.objectProperty(
+        t.identifier('component'),
+        t.identifier(ComponentName)
+    )]
+    metaParam && propertyArray.push(t.objectProperty(
+        t.identifier('meta'),
+        t.stringLiteral(metaParam)
+    ))
+    return t.objectExpression(propertyArray)
 }
 
 
 
 //  父组件命令行 有 但是没找到
 let  noParent = true
-  // 判断该组件是否存在 
+  // 判断该组件是否存在
+  // 1. 检查组件是否存在--- 有没有父组件都要遍历
+  // 2. 是否 父组件 是否存在
+  //  traverse   是深度遍历  所以 必须 每个遍历完 在来一遍-- 不然 上面判断结果 还没有走出来 -- 下边就走了
 traverse(ast, {
     VariableDeclarator(path) {
         if(path.node.id.name === ComponentName) {
@@ -181,12 +207,13 @@ traverse(ast, {
 })
 if (parentName) {
     // 命令行 有父级
-    // 二级路由遍历
+    // 二级路由遍历v  检查是否是第一个  children
     let isChildren = false
     if (noParent) {
         log(`[${parentName}]\t 父级组件没找到，请检查后再试`);
         process.exit(1);
     }
+    //  看 看 能不能找到 parent 上  children  属性
     traverse(ast, {
         ObjectProperty(path) {
             if (path.node.value.name === parentName) {
@@ -201,6 +228,7 @@ if (parentName) {
         
     })
     // log(`[${parentName}]\t 父级路由下是否有Children\t ${isChildren}`)
+    // 这连个可以合成以一个
     if (isChildren) {
         traverse(ast, {
             ArrayExpression(path) {

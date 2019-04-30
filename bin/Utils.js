@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path  = require('path')
-
+//  this 访问的是  整个全局：用的时候赋值给新变量导致的
 function allpath (source) {
     let all = []
     try {
@@ -9,10 +9,24 @@ function allpath (source) {
     } catch (error) {}
     return all
 }
+function log(info) {
+    console.log('\x1B[32m%s\x1B[39m',info)
+}
+function deleteFolderRecursive(path) {
+    if( fs.existsSync(path) ) {
+        fs.readdirSync(path).forEach(function(file) {
+            const curPath = path + "/" + file
+            if(fs.statSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath)
+            }
+        })
+        fs.rmdirSync(path);
+    }
+}
 const Utils = {
-    log(info) {
-        console.log('\x1B[32m%s\x1B[39m',info)
-    },
+    log,
     toLowerLine(str) {
         let temp = str.replace(/([A-Z])/g,"-$1").toLowerCase()
           if (temp.slice(0,1) === '-') { //如果首字母是大写，执行replace时会多一个_，这里需要去掉
@@ -64,19 +78,7 @@ const Utils = {
             return currentObject;
         })
     },
-    deleteFolderRecursive(path) {
-        if( fs.existsSync(path) ) {
-            fs.readdirSync(path).forEach(function(file) {
-                const curPath = path + "/" + file
-                if(fs.statSync(curPath).isDirectory()) { // recurse
-                    deleteFolderRecursive(curPath);
-                } else { // delete file
-                    fs.unlinkSync(curPath)
-                }
-            })
-            fs.rmdirSync(path);
-        }
-    }
+    deleteFolderRecursive
 }
 
 
