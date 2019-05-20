@@ -75,8 +75,8 @@ vue模板例子（css亦是如此）：
 ## -完！
 <details>
   <summary><mark><font color=darkred>常见问题</font></mark></summary>
-  <p> 1. 需要准备什么前置文件？答：跟着提示做就行。 </p>
-  <p> 2. 在什么文件夹下能用？答：项目内就行。</p>
-  <p> 3. 旧项目能用吗？答：能！（符合vue约定目录router/views）</p>
+  <p> 1. 需要准备什么前置文件？<strong>答：跟着提示做就行。 </strong></p>
+  <p> 2. 在什么文件夹下能用？<strong>答：项目内就行。</strong></p>
+  <p> 3. 旧项目能用吗？<strong>答：能！（符合vue约定目录router/views）</strong></p>
   <p> 4. 待补充...</p>
 </details>
