@@ -19,7 +19,6 @@ $ npm install banlg -g
 $ yarn global add banlg
 （mac 遇到权限问题,在安装命令前加  sudo 即可）
 ```
-
 ## API
 ## banlg&ensp;comName&ensp;?parentComName&ensp;
 * `comName <String>`: 将要创建组件名称 
@@ -73,3 +72,11 @@ vue模板例子（css亦是如此）：
 * 3.缩减一些（微微一些）项目周期
 * 4.可撤销，让你无后顾之忧
 * 5.接入现有项目，无需任何更改
+## -完！
+<details>
+  <summary><mark><font color=darkred>常见问题</font></mark></summary>
+  <p> 1. 需要准备什么前置文件？答：跟着提示做就行。 </p>
+  <p> 2. 在什么文件夹下能用？答：项目内就行。</p>
+  <p> 3. 旧项目能用吗？答：能！（符合vue约定目录router/views）</p>
+  <p> 4. 待补充...</p>
+</details>
