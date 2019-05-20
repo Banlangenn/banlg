@@ -11,10 +11,10 @@
     "test4": "node ./../bin/banlangen.js  blgChildren2  banLanGen -t",
     "test5": "node ./../bin/banlangen.js  sdn96lf*%*",
     "test6": "node ./../bin/banlangen.js  -r",
-    "test7": "node ./../bin/banlangen.js  blgChildrenMe  banLanGen -m刘继伟",
+    "test7": "node ./../bin/banlangen.js  blgChildrenMe  banLanGen -m中文",
     "test8": "node ./../bin/banlangen.js  banLanGen8",
-    "revoke": "node ./../bin/banlangen.js  -re",
-    "help": "node ./../bin/banlangen.js  --help"
+    "test9": "node ./../bin/banlangen.js  -re",
+    "test10": "node ./../bin/banlangen.js  --help"
   },
   "author": "",
   "license": "ISC"

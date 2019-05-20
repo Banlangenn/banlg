@@ -24,10 +24,10 @@ const isInsertParent = process.argv[4] && process.argv[4] === '-t'
 const metaParam = getMeta()
 function getMeta() {
     const arr = process.argv.slice(3)
-    //  会主动吧  引号 去掉
+    //  会主动把  引号 去掉
     for (const iterator of arr) {
         if (iterator.startsWith('-m')) {
-            return iterator.slice(2)
+            return iterator.slice(2).toString()
         }
     }
    return false
@@ -179,9 +179,13 @@ function generateEl(isChildren = true, isFirst = false) {
         t.identifier('component'),
         t.identifier(ComponentName)
     )]
+    // 中文变utf-8编码-能照常使用： '\u4E2D\u6587' === '中文'
     metaParam && propertyArray.push(t.objectProperty(
         t.identifier('meta'),
         t.stringLiteral(metaParam)
+    ),t.objectProperty(
+        t.identifier('name'),
+        t.stringLiteral(componentName)
     ))
     return t.objectExpression(propertyArray)
 }
@@ -284,14 +288,14 @@ const introduce = t.variableDeclaration('const', [t.variableDeclarator(t.identif
         )
     )
 )])
-
+// 找到最后一个 import
 let lastImport = null 
 traverse(ast, {
     ImportDeclaration(path) {
         lastImport = path.node.source.value
     }
 })
-
+// 把   引入组件 插入最后一个 import  后边
 traverse(ast, {
     ImportDeclaration(path) {
         if(path.node.source.value === lastImport) {
@@ -300,12 +304,21 @@ traverse(ast, {
         }
     }
 })
+// //  为了符合 我们的 eslint  把 双引号变成单引号
+// traverse(ast, {
+//     StringLiteral(path) {
+//         path.node.value =  path.node.value.replace(/^"(.*)"$/, (d,$1,)=>`'${$1}'`)
+//     }
+// })
 
-const routerContent = generate(ast, {
-    quotes: 'single',
+const routerContent = generate(ast,{ 
+    /* 选项 */
+    //  看不懂  直接自己用正则去掉
 }).code
-
-
+// 去空行
+.replace(/\n(\n)*()*(\n)*\n/g, '\n')
+// 去行尾分号
+.replace(/\;(?=\n)/g, '')
 
 const renderObject = {
     componentName,

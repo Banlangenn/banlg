@@ -1,5 +1,7 @@
 .DS_Store
 node_modules
+Example/src/router
+Example/src/views
 # local env files
 .env.local
 .env.*.local
