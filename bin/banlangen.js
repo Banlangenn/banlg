@@ -16,12 +16,15 @@ const traverse = require('@babel/traverse').default
 const uppercamelcase = require('uppercamelcase')
 const componentName = process.argv[2] 
 const parentName = process.argv[3] && !process.argv[3].startsWith('-')? uppercamelcase(process.argv[3]) : false
+const isInsertParent = process.argv[4] && process.argv[4] === '-t'
+const metaParam = getMeta()
 const ComponentName = uppercamelcase(componentName)
 const fs = require('fs')
 const path  = require('path')
 const Utils =  require('./Utils')
-const isInsertParent = process.argv[4] && process.argv[4] === '-t'
-const metaParam = getMeta()
+
+
+// -------------------
 function getMeta() {
     const arr = process.argv.slice(3)
     //  会主动把  引号 去掉
