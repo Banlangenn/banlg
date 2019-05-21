@@ -25,5 +25,8 @@
     "file-save": "^0.2.0",
     "uppercamelcase": "^3.0.0"
   },
-  "repository": "https://github.com/Banlangenn/banlg"
+  "repository": "https://github.com/Banlangenn/banlg",
+  "devDependencies": {
+    "mocha": "^6.1.4"
+  }
 }
