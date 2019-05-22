@@ -1,5 +1,7 @@
 // 大方的说：就是抄egg  https://github.com/eggjs/egg-init/blob/master/lib/init_command.js
-const fileSave = require('file-save');
+const fileSave = require('file-save')
+const fs = require('fs')
+const path = require('path')
 const babelParser = require('@babel/parser')
 const t = require('@babel/types')
 const generate = require('@babel/generator').default
@@ -12,28 +14,74 @@ module.exports = class Command {
         this.jsonPath = options.jsonPath || './temporary.json'
         this.cssTemplate = options.cssTemplate || './css.bl'
         this.vueTemplate = options.vueTemplate || './vue.bl'
+        this.dev = options.dev || false
     }
-    run(cwd, args) {
+    async run(cwd, args) {
         const argv = this.argv = this.getParser(args || [])
+        if (!argv) {
+            return
+        }
         this.cwd = cwd
+        // 能不能找到 src
         this.projectRoot = this.searchPath()
+        if (!this.projectRoot) {
+            return
+        }
         //  检查文件合法
-        if(!checkDir(this.projectRoot)){
-            process.exit(1)
+        if(!this.checkDir(this.projectRoot)){
+            // process.exit(0)
+            return
         }
         // 撤销指令
         if (argv.componentName === '-re') {
             this.revoke()
+            return
         }
         // 未被拦截的'-'开头不是内置命令
         //  检查命令的 合法性
         if (!this.checkCom(argv)) {
-            process.exit(0)
+            return
         }
         const routerObject = this.generateRouter()
+        //  路由文件能否生成
+        if (!routerObject) {
+            return
+        }
+        // 这里边好多直接退出的 --想想怎么弄 用变量 反正同步 直接return false  --- false的话就退出node
         const filesArray = this.generateVueCss()
-        this.filesArray.push(routerObject)
-        this.createFile(filesArray)
+        filesArray.push(routerObject)
+        const promiseArr = this.createFilePrimise(filesArray)
+        try {
+            await  Promise.all(promiseArr)
+            // 保存文件信息  等待撤回
+            await this.fileSavePromise(
+                path.join(__dirname, this.jsonPath),
+                JSON.stringify({
+                    routerCode: this.originCode,
+                    ComponentName: this.argv.ComponentName,
+                    record: filesArray,
+                    projectRoot: this.projectRoot
+                }
+            ))
+        } catch (error) {
+            this.log('[文件生成失败] \t ' + error)
+        }
+    }
+    // JSON.stringify({
+    //     routerCode: this.originCode,
+    //     ComponentName,
+    //     record:files,
+    //     projectRoot
+    // }
+    fileSavePromise(path, content){
+        return new Promise((resolve,reject) => {
+            fileSave(path)
+            .write(content)
+            .end()
+            .finish(()=>{
+                resolve('data')
+            })
+        })
     }
     /**
      * @returns {Array}
@@ -45,6 +93,7 @@ module.exports = class Command {
         const lowerLineComName = this.argv.lowerLineComName
         const parentName  = this.argv.parentName
         const isInsertParent = this.argv.isInsertParent
+        const projectRoot = this.projectRoot
 
         const renderObject = {
             componentName,
@@ -114,10 +163,11 @@ module.exports = class Command {
         return files
     }
     generateRouter() {
+        const self = this
         const parentName = this.argv.parentName
         const projectRoot = this.projectRoot
-        const checkRouterFile = hasFile(projectRoot, 'src/router/index.js')
-        const originCode = (checkRouterFile ? readFile(projectRoot, 'src/router/index.js') : null) ||
+        const checkRouterFile = this.hasFile(projectRoot, 'src/router/index.js')
+        const originCode = this.originCode = (checkRouterFile ? this.readFile(projectRoot, 'src/router/index.js') : null) ||
         `
         /* eslint-disable */
         import Vue from "vue";
@@ -156,29 +206,36 @@ module.exports = class Command {
         // 1. 检查组件是否存在--- 有没有父组件都要遍历
         // 2. 是否 父组件 是否存在
         //  traverse   是深度遍历  所以 必须 每个遍历完 在来一遍-- 不然 上面判断结果 还没有走出来 -- 下边就走了
+        // 返回 false  外边判断直接退出
+
+        let exitFlag = false
         traverse(ast, {
-        VariableDeclarator(path) {
-            if(path.node.id.name === this.argv.ComponentName) {
-                log(`[${componentName}]\t 组件已存在，请更换组件名称`);
-                process.exit(1);
+            VariableDeclarator(path) {
+                if(path.node.id.name === self.argv.ComponentName) {
+                    self.log(`[${self.argv.componentName}]\t 组件已存在，请更换组件名称`);
+                    exitFlag = true
+                    path.skip()
+                }
+                if( self.argv.parentName && path.node.id.name === self.argv.parentName) {
+                    noParent = false
+                }
             }
-            if( parentName && path.node.id.name === parentName) {
-                noParent = false
-            }
-        }
         })
-        if (parentName) {
+        if (exitFlag) {
+            return false
+        }
+        if (self.argv.parentName) {
         // 命令行 有父级
         // 二级路由遍历v  检查是否是第一个  children
         let isChildren = false
         if (noParent) {
-            log(`[${parentName}]\t 父级组件没找到，请检查后再试`);
-            process.exit(1);
+            this.log(`[${parentName}]\t 父级组件没找到，请检查后再试`);
+            return false
         }
         //  看 看 能不能找到 parent 上  children  属性
         traverse(ast, {
             ObjectProperty(path) {
-                if (path.node.value.name === parentName) {
+                if (path.node.value.name === self.argv.parentName) {
                     if (path.parent.properties.some(element => {
                         return element.key.name === 'children'
                     })) {
@@ -197,8 +254,8 @@ module.exports = class Command {
                     const parent = path.findParent(p => p.isObjectProperty)
                     const properties = parent.parent.properties
                     properties.forEach(element => {
-                        if ( element.value && element.value.name === parentName) {
-                            path.node.elements.push(generateEl())
+                        if ( element.value && element.value.name === self.argv.parentName) {
+                            path.node.elements.push(self.generateEl())
                             path.skip()
                         }
                     })
@@ -209,10 +266,10 @@ module.exports = class Command {
                 ObjectExpression(path) {
                     const properties = path.node.properties
                     properties.forEach(element => {
-                        if ( element.value && element.value.name === parentName) {
+                        if ( element.value && element.value.name === self.argv.parentName) {
                             path.pushContainer('properties',  t.objectProperty(
                                 t.identifier('children'),
-                                t.arrayExpression([generateEl(true, true)])
+                                t.arrayExpression([self.generateEl(true, true)])
                             ))
                             path.skip()
                         }
@@ -226,24 +283,24 @@ module.exports = class Command {
             ArrayExpression(path) {
                 if(path.parent.key.name === 'routes') {
                     if (path.parent.value.elements.length === 1) {
-                        path.node.elements.unshift(generateEl(false, true))
+                        path.node.elements.unshift(self.generateEl(false, true))
                     } else {
-                        path.node.elements.splice(1, 0, generateEl(false, false))
+                        path.node.elements.splice(1, 0, self.generateEl(false, false))
                     }
                     path.skip()
                 }
             }
         })
         }
-        const introduce = t.variableDeclaration('const', [t.variableDeclarator(t.identifier(this.argv.ComponentName), 
+        const introduce = t.variableDeclaration('const', [t.variableDeclarator(t.identifier(self.argv.ComponentName), 
         t.arrowFunctionExpression(
             [],
             t.callExpression(
                 t.import(),
                 [
-                    t.stringLiteral(`${this.argv.isInsertParent ? 
-                        '@/views/' + parentName + '/src/' + this.argv.ComponentName : 
-                        '@/views/' + this.argv.ComponentName}`)
+                    t.stringLiteral(`${self.argv.isInsertParent ? 
+                        '@/views/' + parentName + '/src/' + self.argv.ComponentName : 
+                        '@/views/' + self.argv.ComponentName}`)
                 ]
             )
         )
@@ -299,9 +356,9 @@ module.exports = class Command {
             t.identifier(this.argv.ComponentName)
         )]
         // 中文变utf-8编码-能照常使用： '\u4E2D\u6587' === '中文'
-        this.metaParam && propertyArray.push(t.objectProperty(
+        this.argv.metaParam && propertyArray.push(t.objectProperty(
             t.identifier('meta'),
-            t.stringLiteral(this.metaParam)
+            t.stringLiteral(this.argv.metaParam)
         ),t.objectProperty(
             t.identifier('name'),
             t.stringLiteral(this.argv.componentName)
@@ -324,11 +381,11 @@ module.exports = class Command {
     // 检查 命令是否合法
     checkCom(argv) {
         if (/^-.*/.test(argv.componentName)) {
-            log(`${argv.componentName}\t暂未提供 [${argv.componentName}] API`)
+            this.log(`${argv.componentName}\t暂未提供 [${argv.componentName}] API`)
             return false
         }
         if (/[^\w]/.test(argv.componentName)) {
-            log(`${argv.componentName}\t胡里花哨的组件命名是不允许的`)
+            this.log(`${argv.componentName}\t胡里花哨的组件命名是不允许的`)
             return false
         }
         return true
@@ -338,54 +395,55 @@ module.exports = class Command {
         const jsonPath = this.jsonPath
         if (!this.hasFile(__dirname, jsonPath) || !this.readFile(__dirname, jsonPath)) {
             this.log('[revoke]\t 暂无可撤销操作')
-            process.exit(1)
+            return 
         }
     
         try {
             const files = JSON.parse(this.readFile(__dirname, jsonPath))
             if (files.projectRoot !== this.projectRoot) {
                 log('[revoke]\t 当前项目暂无可撤销操作')
-                process.exit(1)
+                return
             }
             // 把整个文件夹删除了
             if (files.record.length === 4) {
                 // log(deleteFolderRecursive)
-                this.deleteFolderRecursive(path.join(projectRoot, `./src/views/${files.ComponentName}`))
-                log(`☺ [removeDir]\t  src/views/${files.ComponentName}`)
+                this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`))
+                this.log(`[removeDir]\t  src/views/${files.ComponentName}`)
             } else {
                 // 删除 文件
                 for (const file of files.record) {
                     if (file.fileName !== 'router') {
-                        fs.unlinkSync(path.join(projectRoot, file.fileDir))
-                        log(`☺ [removeFile]\t  ${file.fileDir}`+)
+                        fs.unlinkSync(path.join(this.projectRoot, file.fileDir))
+                        this.log(`[removeFile]\t  ${file.fileDir}`)
                     }
                     
                 }
             }
-            fs.writeFileSync(path.join(projectRoot, `./src/router/index.js`), files.routerCode)
-            log(`☺ [change]\t  src/router/index.js`)
+            fs.writeFileSync(path.join(this.projectRoot, `./src/router/index.js`), files.routerCode)
+            this.log(`[change]\t  src/router/index.js`)
             fs.writeFileSync(path.join(__dirname, jsonPath), '')
-            process.exit(0)
+            // process.exit(0)
         } catch (err) {
             this.log('[revoke]\t 失败!文件解析错误\t' + err)
             fs.writeFileSync(path.join(__dirname, jsonPath), '')
-            process.exit(1)
+            return 
         }
     }
-    createFile(files) {
+    createFilePrimise(files) {
         const projectRoot = this.projectRoot
-        const ComponentName = this.argv.ComponentName
+        // const ComponentName = this.argv.ComponentName
         let promiseArr = []
+        const self = this
         for (const file of files) {
             promiseArr.push(
-                new Promise(function (resolve, reject) {
+                new Promise((resolve, reject) => {
                         try {
                             fileSave(path.join(projectRoot, file.fileDir))
                             .write(file.content, 'utf8')
                             .end()
                             .finish(()=>{
-                                log(`☺ ${file.action}\t${file.fileDir}`)
-                                resolve('data')
+                                self.log(`${file.action}\t${file.fileDir}`)
+                                resolve()
                             })
                         } catch (error) {
                             reject(error)
@@ -393,17 +451,8 @@ module.exports = class Command {
                     })
             )
         }
-        Promise.all(promiseArr).then(()=>{
-            fileSave(path.join(__dirname, this.jsonPath))
-            .write( JSON.stringify({
-                routerCode:originCode,
-                ComponentName,
-                record:files,
-                projectRoot
-            }))
-        }).catch(error => {
-            this.log('☺ [文件生成失败] \t ' + error);
-        })
+        return promiseArr
+
     //    files[files.length - 2].fileDir = originCode
      }
     searchPath (rank) {
@@ -418,8 +467,8 @@ module.exports = class Command {
             }
         }
         if (!srcpath) {
-            this.log('☺ [src]\t 请移到项目内后再试')
-            process.exit(1)
+            this.log('[src]\t 请移到项目内后再试')
+            return false
         }
         return srcpath
     }
@@ -431,26 +480,25 @@ module.exports = class Command {
           }
         return temp
     }
-
+    getMetaParam(arr) {
+        //  会主动把  引号 去掉
+        for (const iterator of arr) {
+            if (iterator.startsWith('-m')) {
+                return iterator.slice(2).toString()
+            }
+        }
+       return false
+    }
     getParser(argv) {
         // 历史遗留问题不能用库  入参就是如此奇葩
         if (argv.length === 0 ) {
-            this.log('☺ [组件名称缺失] \t ')
-            process.exit(1);
+            this.log('[组件名称缺失] \t ')
+            return false
         }
         const componentName = argv[0] 
         const parentName = argv[1] && !argv[1].startsWith('-') ? uppercamelcase(argv[1]) : false
-        const isInsertParent = argv[2] && process.argv[2] === '-t'
-        const metaParam = (() => {
-            const arr = argv.slice(1)
-            //  会主动把  引号 去掉
-            for (const iterator of arr) {
-                if (iterator.startsWith('-m')) {
-                    return iterator.slice(2).toString()
-                }
-            }
-           return false
-        })()
+        const isInsertParent = argv[2] && argv[2] === '-t'
+        const metaParam = this.getMetaParam(argv)
         const ComponentName = uppercamelcase(componentName)
         const lowerLineComName = this.toLowerLine(componentName)
         return {
@@ -487,15 +535,15 @@ module.exports = class Command {
 
     deleteFolderRecursive(path) {
         if( fs.existsSync(path) ) {
-            fs.readdirSync(path).forEach(function(file) {
-                const curPath = path + "/" + file
+            fs.readdirSync(path).forEach(file => {
+                const curPath = path + '/' + file
                 if(fs.statSync(curPath).isDirectory()) { // recurse
-                    deleteFolderRecursive(curPath);
+                    this.deleteFolderRecursive(curPath)
                 } else { // delete file
                     fs.unlinkSync(curPath)
                 }
             })
-            fs.rmdirSync(path);
+            fs.rmdirSync(path)
         }
     }
 
@@ -505,6 +553,7 @@ module.exports = class Command {
             all = fs.readdirSync(path.join(this.cwd, source))
             .filter((v) => fs.lstatSync(path.join(this.cwd, source) + v).isDirectory()) 
         } catch (error) {}
+        // 把错误吃掉返回文件夹
         return all
     }
     /**
@@ -524,6 +573,27 @@ module.exports = class Command {
     }
 
     log(info){
-        console.log('\x1B[32m%s\x1B[39m', info)
+        if(!this.dev) {
+            console.log('\x1B[32m%s\x1B[39m','☺ ' + info)
+            return  
+        }
+        // getCallerFileNameAndLine() {
+        function getException() {
+            try {
+                throw Error('')
+            } catch (err) {
+                return err;
+            }
+        }
+        const err = getException()
+        const stack = err.stack
+        const regexp = /(\w+.js):(\d+):\d+\)/g
+        const callerFileNameAndLine = []
+        let matches
+        while ((matches = regexp.exec(stack)) !== null) {
+            callerFileNameAndLine.push(matches)
+        }
+        // console.log(callerFileNameAndLine[0])
+        console.log('\x1B[32m%s\x1B[39m', `[${callerFileNameAndLine[2][1]}]-[${callerFileNameAndLine[2][2]}][-][-][-]`  +'☺ ' + info)
     }
 }
