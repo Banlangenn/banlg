@@ -102,40 +102,40 @@ module.exports = class Command {
         }
         const vueContent = this.hasFile(projectRoot, this.vueTemplate) ?
         this.render(this.readFile(projectRoot, this.vueTemplate) , renderObject) : null ||
-        `<template>
-            <div class="${lowerLineComName}">
-                ${componentName}
-            </div>
-        </template>
-        <script>
-        export default {
-            name: '${ComponentName}',
-            data () {
-                return {
-        
-                }
-            },
-            created () {
-        
-            },
-            methods: {
-        
-            }
+`<template>
+    <div class="${lowerLineComName}">
+        ${componentName}
+    </div>
+</template>
+<script>
+export default {
+    name: '${ComponentName}',
+    data () {
+        return {
+
         }
-        </script>
-        <style lang='scss' >
-            @import './css/${componentName}.scss';
-        </style>
+    },
+    created () {
+
+    },
+    methods: {
+
+    }
+}
+</script>
+<style lang='scss' >
+    @import './css/${componentName}.scss';
+</style>
         `
         const cssContent = this.hasFile(projectRoot,this.cssTemplate) ?
         this.render(this.readFile(projectRoot, this.cssTemplate) , renderObject) : null ||
-        `.${lowerLineComName} {
+`.${lowerLineComName} {
                     
         
         
         
                     
-        }`
+}`
         
         const files = [
             {

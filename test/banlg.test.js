@@ -30,6 +30,10 @@ describe('test/init.test.js', () => {
         // command.deleteFolderRecursive(tmp)
         await Promise.all(promiseArr)
     })()
+            
+    it('banlg  banlanGen：没有src文件目录下', async function () {
+        await command.run( path.join(__dirname, './'),['banlanGen'])
+    })
     it('banlg  没有组件名称：创建组件', async function () {
         await command.run(projectRoot)
     })
@@ -50,11 +54,10 @@ describe('test/init.test.js', () => {
         })
         it('banlg -re：直接撤销撤销', async function () {
             await command.run(projectRoot, ['banlanGen777'])
+        })
+        it('banlg -re：直接撤销撤销', async function () {
             await command.run(projectRoot, ['-re'])
         })
-        // it('banlg -re：直接撤销撤销', async function () {
-        //     await command.run(projectRoot, ['-re'])
-        // })
 
         
 
@@ -89,7 +92,6 @@ describe('test/init.test.js', () => {
         })
 
         // 测试模板
-
 })
 
 
