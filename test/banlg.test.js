@@ -30,7 +30,7 @@ const tmps = [
 const isrf = true
 const tmp = path.join(__dirname, '/../tmp')
 const projectRoot = path.join(__dirname, '/../tmp/src')
-const Command = require('./../bin/lib/command')
+const Command = require('./../lib/command')
 const fileSave = require('file-save')
 let promiseArr = []
 for (const item of tmps) {
@@ -70,10 +70,7 @@ describe('test/init.test.js', () => {
             await promiseArr.shift()()
         })  
 
-  
-
-
-
+        // 业务测试
         it('banlg  没有组件名称：创建组件', async  () =>{
             await command.run(projectRoot)
         })
@@ -133,13 +130,17 @@ describe('test/init.test.js', () => {
 
         // 测试模板
         // 模板是否存在
-        it('banlg banlanGen： css vue模板', async () =>{
-            await promiseArr.shift()()
+        it('banlg banlanGenTmp css vue模板', async () =>{
+            await promiseArr.shift()()  
             await promiseArr.shift()()
             // 为甚什么没有等待。。。
             await command.run(projectRoot, ['banlanGenTmp'])
+        }) 
+        it('banlg -re：撤销 banlanGenTmp', async () =>  {
+            await command.run(projectRoot, ['-re'])
             isrf && command.deleteFolderRecursive(tmp)
-        })  
+        })
+       
 })
 
 
