@@ -431,26 +431,25 @@ export default {
     }
     createFilePrimise(files) {
         const projectRoot = this.projectRoot
-        // const ComponentName = this.argv.ComponentName
         let promiseArr = []
         const self = this
         for (const file of files) {
             promiseArr.push(
                 new Promise((resolve, reject) => {
-                        try {
-                            fileSave(path.join(projectRoot, file.fileDir))
-                            .write(file.content, 'utf8')
-                            .end()
-                            .finish(()=>{
-                                self.log(`${file.action}\t${file.fileDir}`)
-                                resolve()
-                            })
-                        } catch (error) {
-                            reject(error)
-                        }
-                    })
+                    try {
+                        fileSave(path.join(projectRoot, file.fileDir))
+                        .write(file.content, 'utf8')
+                        .end()
+                        .finish(()=>{   
+                            self.log(`${file.action}\t${file.fileDir}`)
+                            resolve()
+                        })
+                    } catch (error) {
+                        reject(error)
+                    }
+                })
             )
-        }
+        }   
         return promiseArr
 
     //    files[files.length - 2].fileDir = originCode
