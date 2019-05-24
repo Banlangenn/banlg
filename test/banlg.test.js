@@ -93,7 +93,7 @@ describe('test/init.test.js', () => {
         it('banlg newChildren banlanGen15：没有找到父组件', async () => {
             await command.run(projectRoot, ['newChildren', 'banlanGen15'])
         })
-        it('banlg -re：删除文件撤销', async  () => {
+        it('banlg banlanGen777 -> banlg -re：删除文件撤销', async  () => {
             await command.run(projectRoot, ['banlanGen777'])
             await command.run(projectRoot, ['-re'])
         })
