@@ -27,7 +27,7 @@ const tmps = [
         {{lowerLineComN}}`
     }
 ]
-const isrf = false
+const isrf = true
 const tmp = path.join(__dirname, '/../tmp')
 const projectRoot = path.join(__dirname, '/../tmp/src')
 const Command = require('./../lib/command')
