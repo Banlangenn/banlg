@@ -27,7 +27,7 @@ const tmps = [
         {{lowerLineComN}}`
     }
 ]
-const isrf = true
+const isrf = false
 const tmp = path.join(__dirname, '/../tmp')
 const projectRoot = path.join(__dirname, '/../tmp/src')
 const Command = require('./../lib/command')
@@ -100,10 +100,10 @@ describe('test/init.test.js', () => {
 
         it('banlg children2 banlanGen -t  ：放到父组件肚子里的子组件\n banlg -re ： 撤销 \n banlg -re ：复撤销', async () =>{
             await command.run(projectRoot, ['children2', 'banlanGen', '-t'])
-            assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
             // 没过
-            assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
-
+            await assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
+            await assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
+            
             await command.run(projectRoot, ['-re'])
             assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
             assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
