@@ -33,7 +33,6 @@
   },
   "repository": "https://github.com/Banlangenn/banlg",
   "devDependencies": {
-    "jest": "^24.8.0",
-    "mocha": "^6.1.4"
+    "jest": "^24.8.0"
   }
 }
