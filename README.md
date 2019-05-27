@@ -1,4 +1,4 @@
-
+[![Build Status](https://www.travis-ci.org/Banlangenn/banlg.svg?branch=master)](https://www.travis-ci.org/Banlangenn/banlg)
 # banlg
 ```
 banlg  comName  ?parentComName ?-t
