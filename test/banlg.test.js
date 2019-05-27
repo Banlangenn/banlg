@@ -98,18 +98,21 @@ describe('test/init.test.js', () => {
             await command.run(projectRoot, ['-re'])
         })
 
-        it('banlg children2 banlanGen -t  ：放到父组件肚子里的子组件\n banlg -re ： 撤销 \n banlg -re ：复撤销', async () =>{
+        it('banlg children2 banlanGen -t：放到父组件肚子里的子组件', async () =>{
             await command.run(projectRoot, ['children2', 'banlanGen', '-t'])
-            // 没过
-            await assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
-            await assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
-            
+            assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
+            assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/children2.scss')))
+        })
+
+        it('banlg -re：父组件内撤销', async () => {
             await command.run(projectRoot, ['-re'])
             assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
-            assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
-
+            assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/children2.scss')))
+        })
+        it('banlg -re：重复撤销', async () =>  {
             await command.run(projectRoot, ['-re'])
         })
+
 
         it('banlg children13 -m：设置mate name', async () =>  {
             await command.run(projectRoot, ['children13', '-m刘小姐'])
