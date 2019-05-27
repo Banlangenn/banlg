@@ -5,5 +5,5 @@ node_js:
 
   script:
   # - scripts/travis-script.sh
-  run_test --coverage
+  test
   bash <(curl -s https://codecov.io/bash)
