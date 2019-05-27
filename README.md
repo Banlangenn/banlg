@@ -1,7 +1,8 @@
+# banlg
 [![Build Status](https://www.travis-ci.org/Banlangenn/banlg.svg?branch=master)](https://www.travis-ci.org/Banlangenn/banlg) 
 [![codecov](https://codecov.io/gh/Banlangenn/banlg/branch/master/graph/badge.svg)](https://codecov.io/gh/Banlangenn/banlg)
 
-# banlg
+
 ```
 banlg  comName  ?parentComName ?-t
 根据命令
