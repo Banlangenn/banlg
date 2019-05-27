@@ -1,0 +1,9 @@
+language: node_js
+
+node_js:
+  - "11"
+
+  script:
+  # - scripts/travis-script.sh
+  run_test --coverage
+  bash <(curl -s https://codecov.io/bash)
