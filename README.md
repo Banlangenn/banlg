@@ -1,4 +1,4 @@
-[![Build Status](https://www.travis-ci.org/Banlangenn/banlg.svg?branch=master)](https://www.travis-ci.org/Banlangenn/banlg)
+[![Build Status](https://www.travis-ci.org/Banlangenn/banlg.svg?branch=master)](https://www.travis-ci.org/Banlangenn/banlg) https://codecov.io/github/Banlangenn/banlg/commit/64742571fccd39e0108a677397376795bb7aca26
 # banlg
 ```
 banlg  comName  ?parentComName ?-t
