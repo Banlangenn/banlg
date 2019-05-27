@@ -8,8 +8,12 @@
   "main": "./bin/banlangen.js",
   "scripts": {
     "release": "sh release.sh",
-    "test": "jest --coverage",
-    "test1": "mocha --coverage"
+    "test": "jest && codecov",
+    "test:l": "jest --coverage"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
   },
   "author": "https://github.com/Banlangenn",
   "license": "ISC",

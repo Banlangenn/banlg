@@ -27,7 +27,7 @@ const tmps = [
         {{lowerLineComN}}`
     }
 ]
-const isrf = true
+const isrf = false
 const tmp = path.join(__dirname, '/../tmp')
 const projectRoot = path.join(__dirname, '/../tmp/src')
 const Command = require('./../lib/command')
@@ -49,12 +49,12 @@ for (const item of tmps) {
             }) 
     )
 }
-    
 describe('test/init.test.js', () => {
     let command
     (async  () =>{
         command = new Command({dev: true})
-        // command.deleteFolderRecursive(tmp)
+        //  清掉本地文件
+        command.deleteFolderRecursive(tmp)
         await promiseArr.shift()()
     })()
         // 文件是否存在 
@@ -98,20 +98,19 @@ describe('test/init.test.js', () => {
             await command.run(projectRoot, ['-re'])
         })
 
-        it('banlg children2 banlanGen -t：放到父组件肚子里的子组件', async () =>{
+        it('banlg children2 banlanGen -t  ：放到父组件肚子里的子组件\n banlg -re ： 撤销 \n banlg -re ：复撤销', async () =>{
             await command.run(projectRoot, ['children2', 'banlanGen', '-t'])
             assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
+            // 没过
             assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
-        })
 
-        it('banlg -re：父组件内撤销', async () => {
             await command.run(projectRoot, ['-re'])
             assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
             assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/Children2.scss')))
-        })
-        it('banlg -re：重复撤销', async () =>  {
+
             await command.run(projectRoot, ['-re'])
         })
+
         it('banlg children13 -m：设置mate name', async () =>  {
             await command.run(projectRoot, ['children13', '-m刘小姐'])
         })
