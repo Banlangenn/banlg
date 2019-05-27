@@ -4,7 +4,7 @@ node_js:
   - "11"
 
 before_script:
-  - yarn global add codecov
+  - npm install codecov --save-dev
 
 script:
  - npm run test
