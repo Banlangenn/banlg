@@ -9,7 +9,8 @@
   "scripts": {
     "release": "sh release.sh",
     "test": "jest && codecov",
-    "test:l": "jest --coverage"
+    "test:l": "jest --coverage",
+    "lint": "eslint lib bin"
   },
   "jest": {
     "coverageDirectory": "./coverage/",
@@ -33,6 +34,10 @@
   },
   "repository": "https://github.com/Banlangenn/banlg",
   "devDependencies": {
-    "jest": "^24.8.0"
-  }
+    "jest": "^24.8.0",
+    "pre-commit": "^1.2.2"
+  },
+  "pre-commit": [
+    "lint"
+  ]
 }
