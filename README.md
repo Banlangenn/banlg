@@ -22,7 +22,7 @@ $ yarn global add banlg
 （mac 遇到权限问题,在安装命令前加  sudo 即可）
 ```
 ## API
-***banlg&ensp;comName&ensp;?parentComName&ensp;-t***
+***banlg&ensp;comName&ensp;?parentComName&ensp;?-t***
 * `comName <String>`: 将要创建组件名称 
 * `parentComName <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)  
