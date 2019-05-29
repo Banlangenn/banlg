@@ -10,7 +10,7 @@
     "release": "sh release.sh",
     "test": "jest && codecov",
     "test:l": "jest --coverage",
-    "lint": "eslint lib bin"
+    "lint": "eslint lib bin test"
   },
   "jest": {
     "coverageDirectory": "./coverage/",
@@ -38,6 +38,6 @@
     "pre-commit": "^1.2.2"
   },
   "pre-commit": [
-    "lint"
+    "lint", "test:l"
   ]
 }
