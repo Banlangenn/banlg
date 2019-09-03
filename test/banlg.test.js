@@ -122,6 +122,10 @@ describe('test/init.test.js', () => {
     it('banlg  %u0u9hbk67^&%……：不符合命名规范', async () =>  {
         await command.run(projectRoot, ['%u0u9hbk67^&%……'])
     })
+    // it('banlg  a/s/d：不符合命名规范', async () =>  {
+    //     await command.run(projectRoot, ['a/s/d'])
+    // })
+
 
     it('banlg  -xxx：不是内置命令', async () =>  {
         await command.run(projectRoot, ['-xxxx'])

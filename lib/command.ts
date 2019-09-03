@@ -1,39 +1,52 @@
 // 大方的说：就是抄egg  https://github.com/eggjs/egg-init/blob/master/lib/init_command.js
-const fileSave = require('file-save')
-import fs = require('fs')
-const path = require('path')
-const babelParser = require('@babel/parser')
+// tslint:disable-next-line:no-var-requires
+const fileSave = require('file-save');
+// tslint:disable-next-line:no-var-requires
+const fs = require('fs');
+// tslint:disable-next-line:no-var-requires
+const path = require('path');
+// tslint:disable-next-line:no-var-requires
+const babelParser = require('@babel/parser');
+// tslint:disable-next-line:no-var-requires
 const t = require('@babel/types')
+// tslint:disable-next-line:no-var-requires
 const generate = require('@babel/generator').default
+// tslint:disable-next-line:no-var-requires
 const traverse = require('@babel/traverse').default
-const uppercamelcase = require('uppercamelcase')
+// tslint:disable-next-line:no-var-requires
+const uppercamelcase = require('uppercamelcase');
 module.exports = class Command {
-    name: string
-    jsonPath: string
-    cssTemplate: string
-    vueTemplate: string
-    dev: boolean
-    argv: any
-    cwd: string
-    projectRoot: string
-    originCode: string
+    private name: string
+    private revokeJsonPath: string
+    private cssTemplate: string
+    private vueTemplate: string
+    private dev: boolean
+    private argv: any
+    private cwd: string
+    private projectRoot: string
+    private originCode: string
     constructor(options) {
         options = options || {}
         this.name = options.name || 'banlg'
-        this.jsonPath = options.jsonPath || './temporary.json'
+        this.revokeJsonPath = options.revokeJsonPath || './temporary.json'
         this.cssTemplate = options.cssTemplate || './css.bl'
         this.vueTemplate = options.vueTemplate || './vue.bl'
-        this.dev = options.dev || false
+        this.dev = options.dev || false // 打错误 log
     }
-    async run(cwd:string, args: Array<string>): Promise<void> {
-        const argv = this.argv = this.getParser(args || [])
-        if (!argv) return
+    /**
+     * name
+     */
+
+        
+    public async run(cwd:string, args: string[]): Promise<void> {
+        const argv = this.argv = this.parserArgv(args || [])
+        if (!argv) { return }
         this.cwd = cwd
         // 能不能找到 src
         this.projectRoot = this.searchPath(4)
-        if (!this.projectRoot) return
+        if (!this.projectRoot) { return }
         //  检查文件合法
-        if(!this.checkDir(this.projectRoot)) return
+        if(!this.checkDir(this.projectRoot)) { return }
         // 撤销指令
         if (argv.componentName === '-re') {
             this.revoke()
@@ -41,12 +54,11 @@ module.exports = class Command {
         }
         // 未被拦截的'-'开头不是内置命令
         //  检查命令的 合法性
-        if (!this.checkCom(argv)) return
+        if (!this.checkCom(argv)) { return }
         
         const routerObject = this.generateRouter()
         //  路由文件能否生成
-        if (!routerObject) return
-        // 这里边好多直接退出的 --想想怎么弄 用变量 反正同步 直接return false  --- false的话就退出node
+        if (!routerObject) { return }
         const filesArray = this.generateVueCss()
         filesArray.push(routerObject)
         const promiseArr = this.createFilePromise(filesArray)
@@ -54,7 +66,7 @@ module.exports = class Command {
             await  Promise.all(promiseArr)
             // 保存文件信息  等待撤回
             await this.fileSavePromise(
-                path.join(__dirname, this.jsonPath),
+                path.join(__dirname, this.revokeJsonPath),
                 JSON.stringify({
                     routerCode: this.originCode,
                     ComponentName: this.argv.ComponentName,
@@ -70,7 +82,12 @@ module.exports = class Command {
      * @returns {Array}
      * @description  vue和css的文件描述文件
      */
-    generateVueCss() {
+    private generateVueCss():Array<{
+        fileDir: string;
+        content: string;
+        fileName: string;
+        action: string;
+    }> {
         const componentName = this.argv.componentName
         const ComponentName = this.argv.ComponentName
         const lowerLineComName = this.argv.lowerLineComName
@@ -135,17 +152,20 @@ export default {
             }
         ]
         // 组件的 index.js：插入到父组件内 是不用index.js的
-        !isInsertParent && files.push({
-            fileDir: `src/views/${ComponentName}/index.js`,
-            content:
-        `import ${ComponentName} from './src/main'
-        export default ${ComponentName}`,
-            fileName:'index',
-            action: 'create'
-        })
+        if (!isInsertParent) {
+            files.push({
+                fileDir: `src/views/${ComponentName}/index.js`,
+                content:
+            `import ${ComponentName} from './src/main'
+            export default ${ComponentName}`,
+                fileName:'index',
+                action: 'create'
+            })
+        }
         return files
     }
-    generateRouter() {
+    private generateRouter() {
+        // tslint:disable-next-line:no-this-assignment
         const self = this
         const parentName = this.argv.parentName
         const projectRoot = this.projectRoot
@@ -171,7 +191,6 @@ export default {
             };
         }
         });
-        
         `
         // updataFile
         const ast = babelParser.parse(originCode, {
@@ -193,19 +212,19 @@ export default {
 
         let exitFlag = false
         traverse(ast, {
-            VariableDeclarator(path) {
-                if(path.node.id.name === self.argv.ComponentName) {
+            VariableDeclarator(astPath) {
+                if(astPath.node.id.name === self.argv.ComponentName) {
                     self.log(`${self.argv.componentName}\t 组件已存在，请更换组件名称`);
                     exitFlag = true
-                    path.skip()
+                    astPath.skip()
                 }
-                if( self.argv.parentName && path.node.id.name === self.argv.parentName) {
+                if( self.argv.parentName && astPath.node.id.name === self.argv.parentName) {
                     noParent = false
                 }
             }
         })
         //  组件已经存在
-        if (exitFlag)  return false
+        if (exitFlag) {  return false }
         if (self.argv.parentName) {
             // 命令行 有父级
             if (noParent) {
@@ -216,14 +235,14 @@ export default {
             //  看 看 能不能找到 parent 上  children  属性
             let isChildren = false
             traverse(ast, {
-                ObjectProperty(path) {
-                    if (path.node.value.name === self.argv.parentName) {
-                        if (path.parent.properties.some(element => {
+                ObjectProperty(astPath) {
+                    if (astPath.node.value.name === self.argv.parentName) {
+                        if (astPath.parent.properties.some(element => {
                             return element.key.name === 'children'
                         })) {
                             isChildren = true
                         }
-                        path.skip()
+                        astPath.skip()
                     }
                 }
                 
@@ -232,28 +251,28 @@ export default {
             // 这连个可以合成以一个
             if (isChildren) {
                 traverse(ast, {
-                    ArrayExpression(path) {
-                        const parent = path.findParent(p => p.isObjectProperty)
+                    ArrayExpression(astPath) {
+                        const parent = astPath.findParent(p => p.isObjectProperty)
                         const properties = parent.parent.properties
                         properties.forEach(element => {
                             if ( element.value && element.value.name === self.argv.parentName) {
-                                path.node.elements.push(self.generateEl())
-                                path.skip()
+                                astPath.node.elements.push(self.generateEl())
+                                astPath.skip()
                             }
                         })
                     }
                 })
             } else {
                 traverse(ast, {
-                    ObjectExpression(path) {
-                        const properties = path.node.properties
+                    ObjectExpression(astPath) {
+                        const properties = astPath.node.properties
                         properties.forEach(element => {
                             if ( element.value && element.value.name === self.argv.parentName) {
-                                path.pushContainer('properties',  t.objectProperty(
+                                astPath.pushContainer('properties',  t.objectProperty(
                                     t.identifier('children'),
                                     t.arrayExpression([self.generateEl(true, true)])
                                 ))
-                                path.skip()
+                                astPath.skip()
                             }
                         })
                     }
@@ -262,14 +281,14 @@ export default {
         } else {
         // 按在一级路由
             traverse(ast, {
-                ArrayExpression(path) {
-                    if(path.parent.key.name === 'routes') {
-                        if (path.parent.value.elements.length === 1) {
-                            path.node.elements.unshift(self.generateEl(false, true))
+                ArrayExpression(astPath) {
+                    if(astPath.parent.key.name === 'routes') {
+                        if (astPath.parent.value.elements.length === 1) {
+                            astPath.node.elements.unshift(self.generateEl(false, true))
                         } else {
-                            path.node.elements.splice(1, 0, self.generateEl(false, false))
+                            astPath.node.elements.splice(1, 0, self.generateEl(false, false))
                         }
-                        path.skip()
+                        astPath.skip()
                     }
                 }
             })
@@ -290,16 +309,16 @@ export default {
         // 找到最后一个 import
         let lastImport = null 
         traverse(ast, {
-            ImportDeclaration(path) {
-                lastImport = path.node.source.value
+            ImportDeclaration(astPath) {
+                lastImport = astPath.node.source.value
             }
         })
         // 把   引入组件 插入最后一个 import  后边
         traverse(ast, {
-            ImportDeclaration(path) {
-                if(path.node.source.value === lastImport) {
-                    path.insertAfter(introduce)
-                    path.skip()
+            ImportDeclaration(astPath) {
+                if(astPath.node.source.value === lastImport) {
+                    astPath.insertAfter(introduce)
+                    astPath.skip()
                 }
             }
         })
@@ -327,7 +346,7 @@ export default {
         }
     }
     // 生成的 {}  是不是 子路由    是不是第一个 路由 
-    generateEl(isChildren = true, isFirst = false) {
+    private generateEl(isChildren = true, isFirst = false) {
         const propertyArray =  [t.objectProperty(
             t.identifier('path'),
             t.stringLiteral(`${isChildren ? 
@@ -338,17 +357,19 @@ export default {
             t.identifier(this.argv.ComponentName)
         )]
         // 中文变utf-8编码-能照常使用： '\u4E2D\u6587' === '中文'
-        this.argv.metaParam && propertyArray.push(t.objectProperty(
-            t.identifier('meta'),
-            t.stringLiteral(this.argv.metaParam)
-        ),t.objectProperty(
-            t.identifier('name'),
-            t.stringLiteral(this.argv.componentName)
-        ))
+        if (this.argv.metaParam) {
+            propertyArray.push(t.objectProperty(
+                t.identifier('meta'),
+                t.stringLiteral(this.argv.metaParam)
+            ),t.objectProperty(
+                t.identifier('name'),
+                t.stringLiteral(this.argv.componentName)
+            ))
+        }
         return t.objectExpression(propertyArray)
     }
     // 校验文件是否合
-    checkDir(projectRoot:string):boolean {
+    private checkDir(projectRoot:string):boolean {
         if (!this.hasFile(projectRoot, 'src/views')) {
             this.log('views\t 缺少陈放组件的views文件夹')
             return false
@@ -361,27 +382,27 @@ export default {
         return true
     }
     // 检查 命令是否合法
-    checkCom(argv) {
+    private checkCom(argv) {
         if (/^-.*/.test(argv.componentName)) {
             this.log(`${argv.componentName}\t 暂未提供 ${argv.componentName} API`)
             return false
         }
-        if (/[^\w]/.test(argv.componentName)) {
+        if (!/[\w\/]/.test(argv.componentName)) {
             this.log(`${argv.componentName}\t 胡里花哨的组件命名是不允许的`)
             return false
         }
         return true
     }
     // 业务 还原上一次操作
-    revoke() {
-        const jsonPath = this.jsonPath
-        if (!this.hasFile(__dirname, jsonPath) || !this.readFile(__dirname, jsonPath)) {
+    private revoke() {
+        const revokeJsonPath = this.revokeJsonPath
+        if (!this.hasFile(__dirname, revokeJsonPath) || !this.readFile(__dirname, revokeJsonPath)) {
             this.log('revoke\t 暂无可撤销操作')
             return 
         }
     
         try {
-            const files = JSON.parse(this.readFile(__dirname, jsonPath))
+            const files = JSON.parse(this.readFile(__dirname, revokeJsonPath))
             if (files.projectRoot !== this.projectRoot) {
                 this.log('revoke\t 当前项目暂无可撤销操作')
                 return
@@ -402,23 +423,28 @@ export default {
             }
             fs.writeFileSync(path.join(this.projectRoot, `./src/router/index.js`), files.routerCode)
             this.log(`change\t src/router/index.js`)
-            fs.writeFileSync(path.join(__dirname, jsonPath), '')
+            fs.writeFileSync(path.join(__dirname, revokeJsonPath), '')
             // process.exit(0)
         } catch (err) {
             this.log('revoke\t 失败!文件解析错误\t ' + err)
-            fs.writeFileSync(path.join(__dirname, jsonPath), '')
+            fs.writeFileSync(path.join(__dirname, revokeJsonPath), '')
         }
     }
 
-    fileSavePromise(path:string, content:string, logInfo?:string){
+    private fileSavePromise(pathname:string, content:string, logInfo?:string){
+        // tslint:disable-next-line:no-this-assignment
         const self = this
-        return new Promise((resolve,reject) => {
+        return new Promise((resolve, reject) => {
             try{
-                fileSave(path)
+                console.log(pathname)
+                fileSave(pathname)
                     .write(content, 'utf8')
                     .end()
                     .finish(()=>{
-                        logInfo && self.log(logInfo)
+                        // tslint:disable-next-line:no-unused-expression
+                        if (logInfo) {
+                            self.log(logInfo)
+                        }
                         resolve('data')
                     })
             } catch(err){
@@ -427,20 +453,8 @@ export default {
         })
     }
 
-    createFilePromise(files) {
+    private createFilePromise(files) {
         const projectRoot = this.projectRoot
-        // 优化代码
-        // let promiseArr = []
-        // for (const file of files) {
-        //     const pathInfo = path.join(projectRoot, file.fileDir)
-        //     const logInfo = `${file.action}\t ${file.fileDir}`
-        //     const content = file.content
-        //     promiseArr.push(
-        //         this.fileSavePromise(pathInfo, content, logInfo)
-        //     )
-        // }   
-        // return promiseArr
-
         return files.map(file => {
             const pathInfo = path.join(projectRoot, file.fileDir)
             const logInfo = `${file.action}\t ${file.fileDir}`
@@ -455,7 +469,7 @@ export default {
      * @param {Number} rank
      * @returns {String | false}
      */
-    searchPath (rank:number): string {
+    private searchPath (rank:number): string {
         rank = rank > 4 ? 4 : rank
         let dir  = ['/', '/../', '/../../','/../../../']
         dir = dir.slice(0, rank)
@@ -473,14 +487,14 @@ export default {
         return srcpath
     }
 
-    toLowerLine(str:string):string {
-        let temp = str.replace(/([A-Z])/g,"-$1").toLowerCase()
-        if (temp.slice(0,1) === '-') { //如果首字母是大写，执行replace时会多一个_，这里需要去掉
+    private toLowerLine(str:string):string {
+        let temp = str.replace(/([A-Z])/g, '-$1').toLowerCase()
+        if (temp.slice(0,1) === '-') { // 如果首字母是大写，执行replace时会多一个_，这里需要去掉
             temp = temp.slice(1)
         }
         return temp
     }
-    getMetaParam(arr:string[]):boolean|string{
+    private getMetaParam(arr:string[]):boolean|string{
         //  会主动把  引号 去掉
         for (const iterator of arr) {
             if (iterator.startsWith('-m')) {
@@ -489,11 +503,11 @@ export default {
         }
         return false
     }
-    getParser(argv:string[]):false | {
-        componentName: any;
-        ComponentName: any;
-        lowerLineComName: any;
-        parentName: any;
+    private parserArgv(argv:string[]):false | {
+        componentName: string;
+        ComponentName: string;
+        lowerLineComName: string;
+        parentName: string;
         isInsertParent: boolean;
         metaParam: string | boolean;
     }{
@@ -502,7 +516,14 @@ export default {
             this.log('组件名称缺失\t ')
             return false
         }
-        const componentName = argv[0] 
+        // 可能会传入路径  例如  seer/dsdsd 目录路径
+        // banlg comName ?parentComName ?-t
+        if ( /\//.test(argv[0])) {
+            console.log('有斜杠路径');
+            
+            console.log('123')
+        }
+        const componentName = argv[0]
         const parentName = argv[1] && !argv[1].startsWith('-') ? uppercamelcase(argv[1]) : false
         const isInsertParent = argv[2] && argv[2] === '-t'
         const metaParam = this.getMetaParam(argv)
@@ -518,44 +539,45 @@ export default {
         }
     }
 
-    render(template:string, context: any):string {
-        //被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
+    private render(template:string, context: any):string {
+        // 被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
         const tokenReg = /(\\)?\{{([^\\{\\}\\]+)(\\)?\}}/g;
-        return template.replace(tokenReg, function (word, slash1, token, slash2) {
-            //如果有转义的\{或\}替换转义字符
+        return template.replace(tokenReg,  (word, slash1, token, slash2) => {
+            // 如果有转义的\{或\}替换转义字符
             if (slash1 || slash2) {  
                 return word.replace('\\', '');
             }
             // 切割 token ,实现级联的变量也可以展开
             const variables = token.replace(/\s/g, '').split('.'); 
             let currentObject = context;
-            let i, length, variable;
-            for (i = 0, length = variables.length; i < length; ++i) {
-                variable = variables[i];
-                currentObject = currentObject[variable];
+            // tslint:disable-next-line:one-variable-per-declaration
+            for (const item of variables) {
+                currentObject = currentObject[item];
                 // 如果当前索引的对象不存在，则直接返回<没有提供此变量>。
-                if (currentObject === undefined || currentObject === null) return '<没有提供此变量>';
+                if (currentObject === undefined || currentObject === null) { return '<没有提供此变量>'; }
             }
             return currentObject;
         })
     }
 
-    deleteFolderRecursive(path:string):void {
-        if( fs.existsSync(path) ) {
-            fs.readdirSync(path).forEach(file => {
-                const curPath = path + '/' + file
+    private deleteFolderRecursive(pathname:string):void {
+        if( fs.existsSync(pathname) ) {
+            fs.readdirSync(pathname).forEach(file => {
+                const curPath = pathname + '/' + file
                 if(fs.statSync(curPath).isDirectory()) { // recurse
                     this.deleteFolderRecursive(curPath)
                 } else { // delete file
                     fs.unlinkSync(curPath)
                 }
             })
-            fs.rmdirSync(path)
+            fs.rmdirSync(pathname)
         }
     }
 
-    allpath (source: string):string[] {
+    private allpath (source: string):string[] {
         let all = []
+        console.log('12123-------------------------------131')
+        console.log(fs.readdirSync(path.join(this.cwd, source)))
         try {
             all = fs.readdirSync(path.join(this.cwd, source))
                 .filter((v) => fs.lstatSync(path.join(this.cwd, source) + v).isDirectory()) 
@@ -573,11 +595,11 @@ export default {
      * @returns  {Boolean} 是否存在
      * @description 判断文件是否存在
      */
-    hasFile (projectRoot: string, filePath: string): boolean {
+    private hasFile (projectRoot: string, filePath: string): boolean {
         return fs.existsSync(path.join(projectRoot, filePath))
     }
 
-    readFile (projectRoot: string, filePath: string): string {
+    private readFile (projectRoot: string, filePath: string): string {
         return fs.readFileSync(path.resolve(projectRoot, filePath), 'utf-8')
     }
     /**
@@ -586,7 +608,7 @@ export default {
      * @returns
      * @description 报错
      */
-    getException(): any {
+    private getException(): any {
         try {
             throw Error('')
         } catch (err) {
@@ -594,7 +616,7 @@ export default {
         }
     }
 
-    log(info: string):void{
+    private log(info: string):void{
         info = info.replace(/^(.+)(?=\t+)/,'[$1]')
         if(!this.dev) {
             console.log('\x1B[32m%s\x1B[39m','☺ ' + info)
@@ -606,6 +628,7 @@ export default {
         const regexp = /(\w+\.js):(\d+):\d+\)/g
         const callerFileNameAndLine = []
         let matches
+        // tslint:disable-next-line:no-conditional-assignment
         while ((matches = regexp.exec(stack)) !== null) {
             callerFileNameAndLine.push(matches)
         }

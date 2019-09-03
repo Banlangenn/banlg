@@ -29,8 +29,8 @@
     "@babel/parser": "^7.1.6",
     "@babel/traverse": "^7.1.6",
     "@babel/types": "^7.1.6",
-    "file-save": "^0.2.0",
-    "uppercamelcase": "^3.0.0"
+    "uppercamelcase": "^3.0.0",
+    "file-save": "^0.2.0"
   },
   "repository": "https://github.com/Banlangenn/banlg",
   "devDependencies": {
@@ -39,7 +39,9 @@
     "pre-commit": "^1.2.2",
     "ts-node": "^8.3.0",
     "tslib": "^1.10.0",
-    "typescript": "^3.5.3"
+    "tslint": "^5.19.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.2"
   },
   "pre-commit": [
     "lint",

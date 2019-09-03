@@ -1,0 +1,38 @@
+    {
+        "defaultSeverity": "error",
+        "extends": [
+            "tslint:latest",
+            "tslint-config-prettier"
+        ],
+        "jsRules": {
+            "no-unused-expression": true,
+            "semi": ["error", "always"],
+            // 都是eslint 很多 校验
+            "key-spacing": ["error", { "beforeColon": false, "afterColon": true }], // 对象字面量中冒号的前后空格
+            "no-multiple-empty-lines": [true, {"max": 2}] // 空行最多不能超过2行
+        },
+        "rules": {
+            "quotemark": [true, "single"],
+            "member-access": [false],
+            "ordered-imports": [false],
+            "max-line-length": [true, 150],
+            "member-ordering": [false],
+            "interface-name": [false],
+            "arrow-parens": false,
+            "variable-name": false,
+            "ter-indent": [true, 4],
+            "no-consecutive-blank-lines": false,
+            "max-classes-per-file": false,
+            "prefer-array-literal": false,
+            "object-literal-sort-keys": false,
+            "align": false,
+            "typedef-whitespace": true, // 类型声明的冒号之前是否需要空格
+            // "no-return-await": true, // 不允许return await
+            "no-console": false, // 不能使用console
+            "no-multi-spaces": true,
+            "key-spacing": [true, { "beforeColon": false, "afterColon": true }], // 对象字面量中冒号的前后空格
+            "no-unnecessary-qualifier": true,
+            "ter-arrow-parens": false
+        },
+        "rulesDirectory": []
+    }
