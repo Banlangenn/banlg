@@ -33,11 +33,7 @@ module.exports = class Command {
         this.vueTemplate = options.vueTemplate || './vue.bl'
         this.dev = options.dev || false // 打错误 log
     }
-    /**
-     * name
-     */
-
-        
+   
     public async run(cwd:string, args: string[]): Promise<void> {
         const argv = this.argv = this.parserArgv(args || [])
         if (!argv) { return }
@@ -100,6 +96,8 @@ module.exports = class Command {
             ComponentName,
             lowerLineComName
         }
+        // console.log('--------------------vueTemplate------------------------------------')
+        // console.log(this.readFile(projectRoot, this.vueTemplate))
         const vueContent = this.hasFile(projectRoot, this.vueTemplate) ?
             this.render(this.readFile(projectRoot, this.vueTemplate) , renderObject) : null ||
 `<template>
@@ -127,6 +125,9 @@ export default {
     @import './css/${componentName}.scss';
 </style>
         `
+        // console.log('================cssTemplate======================')
+        // console.log(this.readFile(projectRoot, this.cssTemplate))
+        
         const cssContent = this.hasFile(projectRoot,this.cssTemplate) ?
             this.render(this.readFile(projectRoot, this.cssTemplate) , renderObject) : null ||
 `.${lowerLineComName} {
@@ -136,16 +137,18 @@ export default {
         
                     
 }`
+
+    // 路径 问题  1.  普通组件  直接拼接就行了 2 父组件内
         
         const files = [
             {
-                fileDir: isInsertParent ? `src/views/${parentName}/src/${ComponentName}.vue` : `src/views/${ComponentName}/src/main.vue`,
+                fileDir: isInsertParent ? `src/views/${parentName}/src/${ComponentName}.vue` : `src/views/${this.generatePath(ComponentName)}/src/main.vue`,
                 content: vueContent,
                 fileName: 'main',
                 action: 'create'
             },
             {
-                fileDir: isInsertParent ? `src/views/${parentName}/src/css/${componentName}.scss` : `src/views/${ComponentName}/src/css/${componentName}.scss`,
+                fileDir: isInsertParent ? `src/views/${parentName}/src/css/${componentName}.scss` : `src/views/${this.generatePath(ComponentName)}/src/css/${componentName}.scss`,
                 content: cssContent,
                 fileName: 'scss',
                 action: 'create'
@@ -154,10 +157,9 @@ export default {
         // 组件的 index.js：插入到父组件内 是不用index.js的
         if (!isInsertParent) {
             files.push({
-                fileDir: `src/views/${ComponentName}/index.js`,
+                fileDir: `src/views/${this.generatePath(ComponentName)}/index.js`,
                 content:
-            `import ${ComponentName} from './src/main'
-            export default ${ComponentName}`,
+                `import ${ComponentName} from './src/main'\nexport default ${ComponentName}`,
                 fileName:'index',
                 action: 'create'
             })
@@ -301,7 +303,7 @@ export default {
                     [
                         t.stringLiteral(`${self.argv.isInsertParent ? 
                             '@/views/' + parentName + '/src/' + self.argv.ComponentName : 
-                            '@/views/' + self.argv.ComponentName}`)
+                            '@/views/' + self.generatePath(self.argv.ComponentName)}`)
                     ]
                 )
             )
@@ -345,6 +347,9 @@ export default {
             action: checkRouterFile ? 'change' : 'create'
         }
     }
+    private generatePath(com: string):string {
+        return this.argv.comPath ? this.argv.comPath + '/'+ com : com
+    }
     // 生成的 {}  是不是 子路由    是不是第一个 路由 
     private generateEl(isChildren = true, isFirst = false) {
         const propertyArray =  [t.objectProperty(
@@ -382,12 +387,21 @@ export default {
         return true
     }
     // 检查 命令是否合法
-    private checkCom(argv) {
+    private checkCom(argv:{
+        componentName: string;
+        ComponentName: string;
+        lowerLineComName: string;
+        parentName: string;
+        isInsertParent: boolean;
+        metaParam: string | boolean;
+        comPath: string | boolean;
+    }) {
         if (/^-.*/.test(argv.componentName)) {
             this.log(`${argv.componentName}\t 暂未提供 ${argv.componentName} API`)
             return false
         }
-        if (!/[\w\/]/.test(argv.componentName)) {
+        if (/[!@#$%^&*]+/.test(argv.componentName)) {
+            // console.log(argv.componentName + '=-------======----------==有特殊字符')
             this.log(`${argv.componentName}\t 胡里花哨的组件命名是不允许的`)
             return false
         }
@@ -510,22 +524,38 @@ export default {
         parentName: string;
         isInsertParent: boolean;
         metaParam: string | boolean;
+        comPath: string | boolean;
     }{
         // 历史遗留问题不能用库  入参就是如此奇葩
         if (argv.length === 0 ) {
             this.log('组件名称缺失\t ')
             return false
         }
-        // 可能会传入路径  例如  seer/dsdsd 目录路径
-        // banlg comName ?parentComName ?-t
-        if ( /\//.test(argv[0])) {
-            console.log('有斜杠路径');
-            
-            console.log('123')
-        }
-        const componentName = argv[0]
-        const parentName = argv[1] && !argv[1].startsWith('-') ? uppercamelcase(argv[1]) : false
+        // 是不是插入父组件
         const isInsertParent = argv[2] && argv[2] === '-t'
+
+        // 可能会传入路径  例如  seer/dsdsd 目录路径
+        if (isInsertParent) {
+            if (/\//.test(argv[0])) {
+                // console.log('========================================================')
+                this.log(`${argv[0]}\t 胡里花哨的组件命名是不允许的`)
+                return false
+            }
+        }
+
+        // banlg comName ?parentComName ?-t
+        let componentName =  argv[0].replace(/^\//, '').replace(/\/$/, '')
+        let comPath: string | boolean = false
+        if (/\//.test(componentName)) {
+            // console.log('==========================================================');
+            // console.log('组件名称有斜杠路径');
+            // return false
+            const index = componentName.lastIndexOf('/')
+            comPath = componentName.substr(0, index)
+            componentName = componentName.substr(index + 1)
+        }
+        // const componentName = argv[0]
+        const parentName = argv[1] && !argv[1].startsWith('-') ? uppercamelcase(argv[1]) : false
         const metaParam = this.getMetaParam(argv)
         const ComponentName = uppercamelcase(componentName)
         const lowerLineComName = this.toLowerLine(componentName)
@@ -536,6 +566,7 @@ export default {
             parentName,
             isInsertParent,
             metaParam,
+            comPath,
         }
     }
 
@@ -560,7 +591,7 @@ export default {
         })
     }
 
-    private deleteFolderRecursive(pathname:string):void {
+    public deleteFolderRecursive(pathname:string):void {
         if( fs.existsSync(pathname) ) {
             fs.readdirSync(pathname).forEach(file => {
                 const curPath = pathname + '/' + file
@@ -575,9 +606,7 @@ export default {
     }
 
     private allpath (source: string):string[] {
-        let all = []
-        console.log('12123-------------------------------131')
-        console.log(fs.readdirSync(path.join(this.cwd, source)))
+        let all = []    
         try {
             all = fs.readdirSync(path.join(this.cwd, source))
                 .filter((v) => fs.lstatSync(path.join(this.cwd, source) + v).isDirectory()) 
@@ -600,7 +629,7 @@ export default {
     }
 
     private readFile (projectRoot: string, filePath: string): string {
-        return fs.readFileSync(path.resolve(projectRoot, filePath), 'utf-8')
+        return fs.readFileSync(path.join(projectRoot, filePath), 'utf-8')
     }
     /**
      *

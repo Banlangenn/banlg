@@ -43,8 +43,8 @@
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.6.2"
   },
-  "pre-commit": [
-    "lint",
-    "test:l"
-  ]
+  // "pre-commit": [
+  //   "lint",
+  //   "test:l"
+  // ]
 }
