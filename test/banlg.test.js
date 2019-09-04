@@ -109,6 +109,23 @@ describe('test/init.test.js', async() => {
     it('banlg /chil/dren2 banlanGen -t：放到父组件肚子里的子组件，组件名称不能是路径', async () =>{
         await command.run(projectRoot, ['/chil/dren2', 'banlanGen', '-t'])
     })
+    
+    // 路径组件
+    it('banlg /chil/dren2  ：路径组件', async () =>{
+        await command.run(projectRoot, ['/chil/dren2'])
+    })
+    
+    it('banlg /chil/dren3 ：路径组件', async () =>{
+        await command.run(projectRoot, ['/chil/dren3'])
+    })
+    // 父子组件  但是不插入父组件文件夹 
+    it('banlg first/second banlanGen：创建子组件', async () => {
+        await command.run(projectRoot, ['first/second', 'banlanGen'])
+    })
+    it('banlg first/three banlanGen：创建子组件', async () => {
+        await command.run(projectRoot, ['first/three', 'banlanGen'])
+    })
+    
 
     // 撤销
     it('banlg childrenRe banlanGen -t：放到父组件肚子里的子组件撤销前置', async () =>{

@@ -538,7 +538,7 @@ export default {
         if (isInsertParent) {
             if (/\//.test(argv[0])) {
                 // console.log('========================================================')
-                this.log(`${argv[0]}\t 胡里花哨的组件命名是不允许的`)
+                this.log(`${argv[0]}\t 插入父组件的不允许有路径`)
                 return false
             }
         }

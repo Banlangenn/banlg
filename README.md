@@ -27,15 +27,32 @@ $ yarn global add banlg
 * `parentComName <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)  
  :blush:? 代表可选参数
-<u>命令和路由是有对应关系的</u>
-```js
-banlg comName  //（直接建立路由和组件文件和文件文件夹）
-banlg comName parentComName  //（建立parentComName  的 comName 子路由）
-banlg comName parentComName -t
- //（创建parentComName  的 comName 子路由，并且文件放在parentComName  文件夹下边）
-```
+<u>命令和路由是有对应关系的</u>  
+
 ***banlg&ensp;-re*** 
  * `-re <flag>`: 撤销上次操作:blush:删除文件,复原router，挽救于水火之中( **只能撤销一次,并且无法反向回退：慎用**)
+ 
+**banlg**命令用于生成vue体系结构组件。
+ 
+|   Option               |      Description           |  Required     | Default value              |
+| :---------------------: | :-------------------------: | :------------: | :-------------------------: |
+| banlg              | 命令主体 | true | N/A |
+| comName                   | 生成的vue体系结构组件的名称(可以包含路径) |true	| N/A  |
+|  parentComName           | vue体系结构父组件的名称(不能包含路径) |false	| N/A |
+Example usage:
+``` shell
+$ banlg comName 
+OR
+$ banlg comName parentComName 
+OR
+banlg comName/com 
+OR
+banlg comName/com parentComName
+OR
+$ banlg comName parentComName -t
+OR
+$ banlg re
+```
 ## 自定义组件模板
 项目根目录[src同级]，可自定义组件模板:`vue.bl    css.bl`，  
 模板内会传入下列变量，用{{xxxxxx}} 接收 
