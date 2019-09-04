@@ -417,7 +417,6 @@ export default {
             this.log('revoke\t 暂无可撤销操作')
             return 
         }
-    
         try {
             const files = JSON.parse(this.readFile(__dirname, revokeJsonPath))
             if (files.projectRoot !== this.projectRoot) {
