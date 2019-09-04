@@ -15,16 +15,16 @@ const tmps = [
     },{
         path: '../tmp/vue.bl',
         content: `
-        {{componentName}}========
-        {{ComponentName}}===========
-        {{lowerLineComName}}============
+        {{componentName}}========vue.bl
+        {{ComponentName}}===========vue.bl
+        {{lowerLineComName}}============vue.bl\n
         {{lowerLineComN}}`
     },{
         path: '../tmp/css.bl',
         content: `
-        {{componentName}}========
-        {{ComponentName}}===========
-        {{lowerLineComName}}============\n
+        {{componentName}}========css.bl
+        {{ComponentName}}===========css.bl
+        {{lowerLineComName}}============css.bl\n
         {{lowerLineComN}}`
     }
 ]
@@ -50,22 +50,22 @@ for (const item of tmps) {
         }) 
     )
 }
-describe('test/init.test.js', () => {
+describe('test/init.test.js', async() => {
     let command
-    (async  () =>{
+    (async () =>{
         command = new Command({dev: true})
         //  清掉本地文件
-        command.deleteFolderRecursive(tmp)
+        await command.deleteFolderRecursive(tmp)
         await promiseArr.shift()()
     })()
     // 文件是否存在 
-    it('banlg  banlanGen：没有src文件目录下', async  () => {
+    it('banlg  banlanGen：没有src文件目录下', async () => {
         await command.run( path.join(__dirname, './'),['banlanGen'])
     })
-    it('banlg banlanGen： 没有views文件夹', async  () => {
+    it('banlg banlanGen： 没有views文件夹', async () => {
         await command.run(projectRoot, ['banlanGen'])
     })
-    it('banlg banlanGen： 没有router文件夹', async  () => {
+    it('banlg banlanGen： 没有router文件夹', async () => {
         await promiseArr.shift()()
         await command.run(projectRoot, ['banlanGen'])
         await promiseArr.shift()()
@@ -99,16 +99,27 @@ describe('test/init.test.js', () => {
         await command.run(projectRoot, ['-re'])
     })
 
-    it('banlg children2 banlanGen -t：放到父组件肚子里的子组件', async () =>{
-        await command.run(projectRoot, ['children2', 'banlanGen', '-t'])
-        assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
-        assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/children2.scss')))
+    it('banlg children2000 banlanGen -t：放到父组件肚子里的子组件', async () =>{
+        await command.run(projectRoot, ['children2000', 'banlanGen', '-t'])
+        assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/children2000.vue')))
+        assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/children2000.scss')))
     })
 
+
+    it('banlg /chil/dren2 banlanGen -t：放到父组件肚子里的子组件，组件名称不能是路径', async () =>{
+        await command.run(projectRoot, ['/chil/dren2', 'banlanGen', '-t'])
+    })
+
+    // 撤销
+    it('banlg childrenRe banlanGen -t：放到父组件肚子里的子组件撤销前置', async () =>{
+        await command.run(projectRoot, ['childrenRe', 'banlanGen', '-t'])
+        assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/ChildrenRe.vue')))
+        assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/ChildrenRe.scss')))
+    })
     it('banlg -re：父组件内撤销', async () => {
         await command.run(projectRoot, ['-re'])
-        assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/Children2.vue')))
-        assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/children2.scss')))
+        assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/ChildrenRe.vue')))
+        assert(!fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/ChildrenRe.scss')))
     })
     it('banlg -re：重复撤销', async () =>  {
         await command.run(projectRoot, ['-re'])
@@ -122,9 +133,9 @@ describe('test/init.test.js', () => {
     it('banlg  %u0u9hbk67^&%……：不符合命名规范', async () =>  {
         await command.run(projectRoot, ['%u0u9hbk67^&%……'])
     })
-    // it('banlg  a/s/d：不符合命名规范', async () =>  {
-    //     await command.run(projectRoot, ['a/s/d'])
-    // })
+    it('banlg  bang1/banlang2/testCom：路径组件', async () =>  {
+        await command.run(projectRoot, ['bang1/banlang2/testCom'])
+    })
 
 
     it('banlg  -xxx：不是内置命令', async () =>  {
@@ -137,12 +148,15 @@ describe('test/init.test.js', () => {
 
     // 测试模板
     // 模板是否存在
-    it('banlg banlanGenTmp css vue模板', async () =>{
-        await promiseArr.shift()()   // 生成测试模板
-        await promiseArr.shift()()  // 生成测试模板
+    it('banlg banLanGenTmp css vue模板', async () =>{
+        // await promiseArr.shift()()   // 生成测试模板
+        // await promiseArr.shift()()  // 生成测试模板
         // 为甚什么没有等待。。。
-        await command.run(projectRoot, ['banlanGenTmp'])
-    }) 
+        await command.run(projectRoot, ['banLanGenTmp'])
+    })
+    it('banlg blgComponent：普通组件', async () => {
+        await command.run(projectRoot, ['blgComponent'])
+    })
     it('banlg -re：撤销 banlanGenTmp', async () =>  {
         await command.run(projectRoot, ['-re'])
         isrf && command.deleteFolderRecursive(tmp)
