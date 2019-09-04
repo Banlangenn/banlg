@@ -1,4 +1,5 @@
-const Command = require('./../lib/command')
+// tslint:disable-next-line:no-var-requires
+const Command = require('./../lib/command.js')
 
 async function command() {
     try {

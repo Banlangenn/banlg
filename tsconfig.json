@@ -1,17 +1,20 @@
 {
-    "include": ["./lib/*.ts"],
+    "include": ["./src/**/*.ts"],
     "exclude": ["node_modules", "dist", "./example/**/node_modules"],
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
         "allowJs": true,
         "module": "commonjs",
-        "target": "es6",
+        "target": "es2017",
         "moduleResolution": "node",
         "lib": ["es2015"],
         "sourceMap": true,
         "pretty": true,
         "strictFunctionTypes": false,
-        "importHelpers": true
+        "importHelpers": true,
+        "outDir": "./build", 
+        "rootDir": "./src",
+        "removeComments": true,
     }
 }

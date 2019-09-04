@@ -54,6 +54,7 @@ module.exports = class Command {
         
         const routerObject = this.generateRouter()
         //  路由文件能否生成
+        // 组件已存在等有问题都会在这里 return掉
         if (!routerObject) { return }
         const filesArray = this.generateVueCss()
         filesArray.push(routerObject)
@@ -65,7 +66,7 @@ module.exports = class Command {
                 path.join(__dirname, this.revokeJsonPath),
                 JSON.stringify({
                     routerCode: this.originCode,
-                    ComponentName: this.argv.ComponentName,
+                    ComponentName: this.generatePath(this.argv.ComponentName),
                     record: filesArray,
                     projectRoot: this.projectRoot
                 }
@@ -423,8 +424,23 @@ export default {
             }
             // 把整个文件夹删除了
             if (files.record.length === 4) {
-                // log(deleteFolderRecursive)
-                this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`))
+                // 不是插入父组件那种
+                if (/\//.test(files.ComponentName)) {
+                    console.log('========================')
+                    console.log(files.ComponentName)
+                    // 有路径那种
+                    this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`))
+                    // 就查2级 是否有文件
+                    const index = files.ComponentName.lastIndexOf('/')
+                    const comPath = files.ComponentName.substr(0, index)
+                    if (fs.readdirSync(path.join(this.projectRoot, `./src/views/${comPath}`)).length === 0) {
+                        this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${comPath}`))
+                    }
+                } else {
+                    this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`))
+                }
+               
+                // 我现在想法是 --扯一级 往上文件夹数量是不是 0  一直到  views和 最多删 4 级 双保险
                 this.log(`removeDir\t src/views/${files.ComponentName}`)
             } else {
                 // 删除 文件
@@ -450,7 +466,6 @@ export default {
         const self = this
         return new Promise((resolve, reject) => {
             try{
-                console.log(pathname)
                 fileSave(pathname)
                     .write(content, 'utf8')
                     .end()
@@ -471,7 +486,7 @@ export default {
         const projectRoot = this.projectRoot
         return files.map(file => {
             const pathInfo = path.join(projectRoot, file.fileDir)
-            const logInfo = `${file.action}\t ${file.fileDir}`
+            const logInfo = `${file.action}\t${file.fileDir}`
             const content = file.content
             return this.fileSavePromise(pathInfo, content, logInfo)
         })
@@ -592,7 +607,7 @@ export default {
     }
 
     public deleteFolderRecursive(pathname:string):void {
-        if( fs.existsSync(pathname) ) {
+        if(fs.existsSync(pathname)) {
             fs.readdirSync(pathname).forEach(file => {
                 const curPath = pathname + '/' + file
                 if(fs.statSync(curPath).isDirectory()) { // recurse
@@ -647,20 +662,7 @@ export default {
 
     private log(info: string):void{
         info = info.replace(/^(.+)(?=\t+)/,'[$1]')
-        if(!this.dev) {
-            console.log('\x1B[32m%s\x1B[39m','☺ ' + info)
-            return  
-        }
-
-        const err = this.getException()
-        const stack = err.stack
-        const regexp = /(\w+\.js):(\d+):\d+\)/g
-        const callerFileNameAndLine = []
-        let matches
-        // tslint:disable-next-line:no-conditional-assignment
-        while ((matches = regexp.exec(stack)) !== null) {
-            callerFileNameAndLine.push(matches)
-        }
-        console.log('\x1B[32m%s\x1B[39m', `[${callerFileNameAndLine[2][1]}]-[${callerFileNameAndLine[2][2]}][-][-][-]`  +'☺ ' + info)
+        console.log('\x1B[32m%s\x1B[39m','☺' + info)
     }
+
 }

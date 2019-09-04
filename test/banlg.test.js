@@ -31,7 +31,7 @@ const tmps = [
 const isrf = false
 const tmp = path.join(__dirname, '/../tmp')
 const projectRoot = path.join(__dirname, '/../tmp/src')
-const Command = require('./../lib/command')
+const Command = require('./../build/lib/command')
 const fileSave = require('file-save')
 let promiseArr = []
 for (const item of tmps) {
@@ -50,25 +50,26 @@ for (const item of tmps) {
         }) 
     )
 }
-describe('test/init.test.js', async() => {
-    let command
-    (async () =>{
-        command = new Command({dev: true})
-        //  清掉本地文件
-        await command.deleteFolderRecursive(tmp)
-        await promiseArr.shift()()
-    })()
+describe('test/init.test.js', () => {
+
+
+        let command = new Command({dev: true})
+        //  同步清掉本地文件
+        command.deleteFolderRecursive(tmp)
+  
     // 文件是否存在 
     it('banlg  banlanGen：没有src文件目录下', async () => {
         await command.run( path.join(__dirname, './'),['banlanGen'])
+        promiseArr.shift()() // src
     })
     it('banlg banlanGen： 没有views文件夹', async () => {
         await command.run(projectRoot, ['banlanGen'])
+        await promiseArr.shift()() // views
     })
     it('banlg banlanGen： 没有router文件夹', async () => {
-        await promiseArr.shift()()
+        // await promiseArr.shift()()   
         await command.run(projectRoot, ['banlanGen'])
-        await promiseArr.shift()()
+        await promiseArr.shift()() // router
     })  
 
     // 业务测试
@@ -94,8 +95,8 @@ describe('test/init.test.js', async() => {
     it('banlg newChildren banlanGen15：没有找到父组件', async () => {
         await command.run(projectRoot, ['newChildren', 'banlanGen15'])
     })
-    it('banlg banlanGen777 -> banlg -re：删除文件撤销', async  () => {
-        await command.run(projectRoot, ['banlanGen777'])
+    it('banlg banlanGenLL-> banlg -re：删除文件撤销', async  () => {
+        await command.run(projectRoot, ['banlanGenLL'])
         await command.run(projectRoot, ['-re'])
     })
 
@@ -166,11 +167,25 @@ describe('test/init.test.js', async() => {
     // 测试模板
     // 模板是否存在
     it('banlg banLanGenTmp css vue模板', async () =>{
-        // await promiseArr.shift()()   // 生成测试模板
-        // await promiseArr.shift()()  // 生成测试模板
+        await promiseArr.shift()()   // 生成测试模板
+        await promiseArr.shift()()  // 生成测试模板
         // 为甚什么没有等待。。。
         await command.run(projectRoot, ['banLanGenTmp'])
     })
+
+    it('banlg blgComponent/abcdc：普通路径组件 2个 留着', async () => {
+        await command.run(projectRoot, ['blgComponent/abcdc'])
+        await command.run(projectRoot, ['blgComponent/abcdcd'])
+        await command.run(projectRoot, ['-re'])
+    })
+    it('banlg blgComponent/abcdcd：普通路径组件 1 个留着', async () => {
+        await command.run(projectRoot, ['blgComponent/abcdcd'])
+        await command.run(projectRoot, ['-re'])
+    })
+
+
+    //-- 二级后  又建同名一级 -- 判断一下是否有一级了
+
     it('banlg blgComponent：普通组件', async () => {
         await command.run(projectRoot, ['blgComponent'])
     })
