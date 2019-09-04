@@ -39,6 +39,7 @@ $ yarn global add banlg
 | banlg              | 命令主体 | true | N/A |
 | comName                   | 生成的vue体系结构组件的名称(可以包含路径) |true	| N/A  |
 |  parentComName           | vue体系结构父组件的名称(不能包含路径) |false	| N/A |
+
 Example usage:
 ``` shell
 $ banlg comName 
