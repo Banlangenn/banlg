@@ -318,8 +318,6 @@ export default {
             }
             if (files.record.length === 4) {
                 if (/\//.test(files.ComponentName)) {
-                    console.log('========================');
-                    console.log(files.ComponentName);
                     this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`));
                     const index = files.ComponentName.lastIndexOf('/');
                     const comPath = files.ComponentName.substr(0, index);

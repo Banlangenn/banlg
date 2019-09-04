@@ -428,8 +428,6 @@ export default {
             if (files.record.length === 4) {
                 // 不是插入父组件那种
                 if (/\//.test(files.ComponentName)) {
-                    console.log('========================')
-                    console.log(files.ComponentName)
                     // 有路径那种
                     this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`))
                     // 就查2级 是否有文件
