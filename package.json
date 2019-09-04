@@ -3,7 +3,7 @@
     "banlg": "./build/bin/banlangen.js"
   },
   "name": "banlg",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "命令行工具   快捷创建组件文件以及[引入文件,创建路由]",
   "main": "./build/bin/banlangen.js",
   "scripts": {
