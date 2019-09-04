@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+'use strict';
 // tslint:disable-next-line:no-var-requires
 const Command = require('./../lib/command.js')
 

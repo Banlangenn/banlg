@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+'use strict';
 // 大方的说：就是抄egg  https://github.com/eggjs/egg-init/blob/master/lib/init_command.js
 // tslint:disable-next-line:no-var-requires
 const fileSave = require('file-save');

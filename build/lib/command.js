@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+'use strict';
 const fileSave = require('file-save');
 const fs = require('fs');
 const path = require('path');

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+'use strict';
 const Command = require('./../lib/command.js');
 async function command() {
     try {
