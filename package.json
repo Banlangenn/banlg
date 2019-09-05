@@ -11,7 +11,7 @@
     "test": "jest && codecov",
     "test:l": "jest --coverage",
     "lint": "eslint lib bin test",
-    "build": "rimraf -rf ./build && tsc"
+    "build": "rm -rf ./build && tsc"
   },
   "jest": {
     "coverageDirectory": "./coverage/",
@@ -35,7 +35,7 @@
   },
   "repository": "https://github.com/Banlangenn/banlg",
   "devDependencies": {
-    "@types/node": "^12.7.1",
+    "@types/node": "^12.7.4",
     "jest": "^24.8.0",
     "pre-commit": "^1.2.2",
     "ts-node": "^8.3.0",

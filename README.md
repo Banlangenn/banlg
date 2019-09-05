@@ -44,9 +44,9 @@ Example usage:
 ``` shell
 $ banlg comName 
 OR
-$ banlg comName parentComName 
-OR
 banlg comName/com 
+OR
+$ banlg comName parentComName 
 OR
 banlg comName/com parentComName
 OR
