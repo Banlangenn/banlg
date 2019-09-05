@@ -1,6 +1,6 @@
 {
     "include": ["./src/**/*.ts"],
-    "exclude": ["node_modules", "dist", "./example/**/node_modules"],
+    "exclude": ["node_modules", "build", "./example/**/node_modules"],
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
