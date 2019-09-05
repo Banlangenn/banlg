@@ -1,28 +1,12 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-// 大方的说：就是抄egg  https://github.com/eggjs/egg-init/blob/master/lib/init_command.js
-// tslint:disable-next-line:no-var-requires
+#!/usr/bin/env node
+'use strict';
 const fileSave = require('file-save');
-// tslint:disable-next-line:no-var-requires
 const fs = require('fs');
-// tslint:disable-next-line:no-var-requires
 const path = require('path');
-// tslint:disable-next-line:no-var-requires
 const babelParser = require('@babel/parser');
-// tslint:disable-next-line:no-var-requires
 const t = require('@babel/types');
-// tslint:disable-next-line:no-var-requires
 const generate = require('@babel/generator').default;
-// tslint:disable-next-line:no-var-requires
 const traverse = require('@babel/traverse').default;
-// tslint:disable-next-line:no-var-requires
 const uppercamelcase = require('uppercamelcase');
 module.exports = class Command {
     constructor(options) {
@@ -31,61 +15,48 @@ module.exports = class Command {
         this.revokeJsonPath = options.revokeJsonPath || './temporary.json';
         this.cssTemplate = options.cssTemplate || './css.bl';
         this.vueTemplate = options.vueTemplate || './vue.bl';
-        this.dev = options.dev || false; // 打错误 log
+        this.dev = options.dev || false;
     }
-    run(cwd, args) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const argv = this.argv = this.parserArgv(args || []);
-            if (!argv) {
-                return;
-            }
-            this.cwd = cwd;
-            // 能不能找到 src
-            this.projectRoot = this.searchPath(4);
-            if (!this.projectRoot) {
-                return;
-            }
-            //  检查文件合法
-            if (!this.checkDir(this.projectRoot)) {
-                return;
-            }
-            // 撤销指令
-            if (argv.componentName === '-re') {
-                this.revoke();
-                return;
-            }
-            // 未被拦截的'-'开头不是内置命令
-            //  检查命令的 合法性
-            if (!this.checkCom(argv)) {
-                return;
-            }
-            const routerObject = this.generateRouter();
-            //  路由文件能否生成
-            if (!routerObject) {
-                return;
-            }
-            const filesArray = this.generateVueCss();
-            filesArray.push(routerObject);
-            const promiseArr = this.createFilePromise(filesArray);
-            try {
-                yield Promise.all(promiseArr);
-                // 保存文件信息  等待撤回
-                yield this.fileSavePromise(path.join(__dirname, this.revokeJsonPath), JSON.stringify({
-                    routerCode: this.originCode,
-                    ComponentName: this.argv.ComponentName,
-                    record: filesArray,
-                    projectRoot: this.projectRoot
-                }));
-            }
-            catch (error) {
-                this.log('文件生成失败\t ' + error);
-            }
-        });
+    async run(cwd, args) {
+        const argv = this.argv = this.parserArgv(args || []);
+        if (!argv) {
+            return;
+        }
+        this.cwd = cwd;
+        this.projectRoot = this.searchPath(4);
+        if (!this.projectRoot) {
+            return;
+        }
+        if (!this.checkDir(this.projectRoot)) {
+            return;
+        }
+        if (argv.componentName === '-re') {
+            this.revoke();
+            return;
+        }
+        if (!this.checkCom(argv)) {
+            return;
+        }
+        const routerObject = this.generateRouter();
+        if (!routerObject) {
+            return;
+        }
+        const filesArray = this.generateVueCss();
+        filesArray.push(routerObject);
+        const promiseArr = this.createFilePromise(filesArray);
+        try {
+            await Promise.all(promiseArr);
+            await this.fileSavePromise(path.join(__dirname, this.revokeJsonPath), JSON.stringify({
+                routerCode: this.originCode,
+                ComponentName: this.generatePath(this.argv.ComponentName),
+                record: filesArray,
+                projectRoot: this.projectRoot
+            }));
+        }
+        catch (error) {
+            this.log('文件生成失败\t ' + error);
+        }
     }
-    /**
-     * @returns {Array}
-     * @description  vue和css的文件描述文件
-     */
     generateVueCss() {
         const componentName = this.argv.componentName;
         const ComponentName = this.argv.ComponentName;
@@ -98,8 +69,6 @@ module.exports = class Command {
             ComponentName,
             lowerLineComName
         };
-        // console.log('--------------------vueTemplate------------------------------------')
-        // console.log(this.readFile(projectRoot, this.vueTemplate))
         const vueContent = this.hasFile(projectRoot, this.vueTemplate) ?
             this.render(this.readFile(projectRoot, this.vueTemplate), renderObject) : null ||
             `<template>
@@ -127,8 +96,6 @@ export default {
     @import './css/${componentName}.scss';
 </style>
         `;
-        // console.log('================cssTemplate======================')
-        // console.log(this.readFile(projectRoot, this.cssTemplate))
         const cssContent = this.hasFile(projectRoot, this.cssTemplate) ?
             this.render(this.readFile(projectRoot, this.cssTemplate), renderObject) : null ||
             `.${lowerLineComName} {
@@ -138,7 +105,6 @@ export default {
         
                     
 }`;
-        // 路径 问题  1.  普通组件  直接拼接就行了 2 父组件内
         const files = [
             {
                 fileDir: isInsertParent ? `src/views/${parentName}/src/${ComponentName}.vue` : `src/views/${this.generatePath(ComponentName)}/src/main.vue`,
@@ -153,7 +119,6 @@ export default {
                 action: 'create'
             }
         ];
-        // 组件的 index.js：插入到父组件内 是不用index.js的
         if (!isInsertParent) {
             files.push({
                 fileDir: `src/views/${this.generatePath(ComponentName)}/index.js`,
@@ -165,7 +130,6 @@ export default {
         return files;
     }
     generateRouter() {
-        // tslint:disable-next-line:no-this-assignment
         const self = this;
         const parentName = this.argv.parentName;
         const projectRoot = this.projectRoot;
@@ -192,22 +156,14 @@ export default {
         }
         });
         `;
-        // updataFile
         const ast = babelParser.parse(originCode, {
             sourceType: 'module',
-            // allowImportExportEverywhere: true,
             plugins: [
                 'flow',
                 'dynamicImport'
             ]
         });
-        //  父组件命令行 有 但是没找到
         let noParent = true;
-        // 判断该组件是否存在
-        // 1. 检查组件是否存在--- 有没有父组件都要遍历
-        // 2. 是否 父组件 是否存在
-        //  traverse   是深度遍历  所以 必须 每个遍历完 在来一遍-- 不然 上面判断结果 还没有走出来 -- 下边就走了
-        // 返回 false  外边判断直接退出
         let exitFlag = false;
         traverse(ast, {
             VariableDeclarator(astPath) {
@@ -221,18 +177,14 @@ export default {
                 }
             }
         });
-        //  组件已经存在
         if (exitFlag) {
             return false;
         }
         if (self.argv.parentName) {
-            // 命令行 有父级
             if (noParent) {
                 this.log(`${parentName}\t 父级组件没找到，请检查后再试`);
                 return false;
             }
-            // 二级路由遍历v  检查是否是第一个  children
-            //  看 看 能不能找到 parent 上  children  属性
             let isChildren = false;
             traverse(ast, {
                 ObjectProperty(astPath) {
@@ -246,8 +198,6 @@ export default {
                     }
                 }
             });
-            // log(`[${parentName}]\t 父级路由下是否有Children\t ${isChildren}`)
-            // 这连个可以合成以一个
             if (isChildren) {
                 traverse(ast, {
                     ArrayExpression(astPath) {
@@ -277,7 +227,6 @@ export default {
             }
         }
         else {
-            // 按在一级路由
             traverse(ast, {
                 ArrayExpression(astPath) {
                     if (astPath.parent.key.name === 'routes') {
@@ -297,14 +246,12 @@ export default {
                     '@/views/' + parentName + '/src/' + self.argv.ComponentName :
                     '@/views/' + self.generatePath(self.argv.ComponentName)}`)
             ])))]);
-        // 找到最后一个 import
         let lastImport = null;
         traverse(ast, {
             ImportDeclaration(astPath) {
                 lastImport = astPath.node.source.value;
             }
         });
-        // 把   引入组件 插入最后一个 import  后边
         traverse(ast, {
             ImportDeclaration(astPath) {
                 if (astPath.node.source.value === lastImport) {
@@ -313,19 +260,8 @@ export default {
                 }
             }
         });
-        // //  为了符合 我们的 eslint  把 双引号变成单引号
-        // traverse(ast, {
-        //     StringLiteral(path) {
-        //         path.node.value =  path.node.value.replace(/^"(.*)"$/, (d,$1,)=>`'${$1}'`)
-        //     }
-        // })
-        const routerContent = generate(ast, {
-        /* 选项 */
-        //  看不懂  直接自己用正则去掉
-        }).code
-            // 去空行
+        const routerContent = generate(ast, {}).code
             .replace(/\n(\n)*()*(\n)*\n/g, '\n')
-            // 去行尾分号
             .replace(/;(?=\n)/g, '');
         return {
             fileDir: `src/router/index.js`,
@@ -337,18 +273,15 @@ export default {
     generatePath(com) {
         return this.argv.comPath ? this.argv.comPath + '/' + com : com;
     }
-    // 生成的 {}  是不是 子路由    是不是第一个 路由 
     generateEl(isChildren = true, isFirst = false) {
         const propertyArray = [t.objectProperty(t.identifier('path'), t.stringLiteral(`${isChildren ?
                 (isFirst ? '' : this.toLowerLine(this.argv.componentName))
                 : (isFirst ? '/' : '/' + this.toLowerLine(this.argv.componentName))}`)), t.objectProperty(t.identifier('component'), t.identifier(this.argv.ComponentName))];
-        // 中文变utf-8编码-能照常使用： '\u4E2D\u6587' === '中文'
         if (this.argv.metaParam) {
             propertyArray.push(t.objectProperty(t.identifier('meta'), t.stringLiteral(this.argv.metaParam)), t.objectProperty(t.identifier('name'), t.stringLiteral(this.argv.componentName)));
         }
         return t.objectExpression(propertyArray);
     }
-    // 校验文件是否合
     checkDir(projectRoot) {
         if (!this.hasFile(projectRoot, 'src/views')) {
             this.log('views\t 缺少陈放组件的views文件夹');
@@ -360,20 +293,17 @@ export default {
         }
         return true;
     }
-    // 检查 命令是否合法
     checkCom(argv) {
         if (/^-.*/.test(argv.componentName)) {
             this.log(`${argv.componentName}\t 暂未提供 ${argv.componentName} API`);
             return false;
         }
         if (/[!@#$%^&*]+/.test(argv.componentName)) {
-            // console.log(argv.componentName + '=-------======----------==有特殊字符')
             this.log(`${argv.componentName}\t 胡里花哨的组件命名是不允许的`);
             return false;
         }
         return true;
     }
-    // 业务 还原上一次操作
     revoke() {
         const revokeJsonPath = this.revokeJsonPath;
         if (!this.hasFile(__dirname, revokeJsonPath) || !this.readFile(__dirname, revokeJsonPath)) {
@@ -386,14 +316,21 @@ export default {
                 this.log('revoke\t 当前项目暂无可撤销操作');
                 return;
             }
-            // 把整个文件夹删除了
             if (files.record.length === 4) {
-                // log(deleteFolderRecursive)
-                this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`));
+                if (/\//.test(files.ComponentName)) {
+                    this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`));
+                    const index = files.ComponentName.lastIndexOf('/');
+                    const comPath = files.ComponentName.substr(0, index);
+                    if (fs.readdirSync(path.join(this.projectRoot, `./src/views/${comPath}`)).length === 0) {
+                        this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${comPath}`));
+                    }
+                }
+                else {
+                    this.deleteFolderRecursive(path.join(this.projectRoot, `./src/views/${files.ComponentName}`));
+                }
                 this.log(`removeDir\t src/views/${files.ComponentName}`);
             }
             else {
-                // 删除 文件
                 for (const file of files.record) {
                     if (file.fileName !== 'router') {
                         fs.unlinkSync(path.join(this.projectRoot, file.fileDir));
@@ -404,7 +341,6 @@ export default {
             fs.writeFileSync(path.join(this.projectRoot, `./src/router/index.js`), files.routerCode);
             this.log(`change\t src/router/index.js`);
             fs.writeFileSync(path.join(__dirname, revokeJsonPath), '');
-            // process.exit(0)
         }
         catch (err) {
             this.log('revoke\t 失败!文件解析错误\t ' + err);
@@ -412,16 +348,13 @@ export default {
         }
     }
     fileSavePromise(pathname, content, logInfo) {
-        // tslint:disable-next-line:no-this-assignment
         const self = this;
         return new Promise((resolve, reject) => {
             try {
-                console.log(pathname);
                 fileSave(pathname)
                     .write(content, 'utf8')
                     .end()
                     .finish(() => {
-                    // tslint:disable-next-line:no-unused-expression
                     if (logInfo) {
                         self.log(logInfo);
                     }
@@ -437,17 +370,11 @@ export default {
         const projectRoot = this.projectRoot;
         return files.map(file => {
             const pathInfo = path.join(projectRoot, file.fileDir);
-            const logInfo = `${file.action}\t ${file.fileDir}`;
+            const logInfo = `${file.action}\t${file.fileDir}`;
             const content = file.content;
             return this.fileSavePromise(pathInfo, content, logInfo);
         });
     }
-    /**
-     *
-     *
-     * @param {Number} rank
-     * @returns {String | false}
-     */
     searchPath(rank) {
         rank = rank > 4 ? 4 : rank;
         let dir = ['/', '/../', '/../../', '/../../../'];
@@ -467,13 +394,12 @@ export default {
     }
     toLowerLine(str) {
         let temp = str.replace(/([A-Z])/g, '-$1').toLowerCase();
-        if (temp.slice(0, 1) === '-') { // 如果首字母是大写，执行replace时会多一个_，这里需要去掉
+        if (temp.slice(0, 1) === '-') {
             temp = temp.slice(1);
         }
         return temp;
     }
     getMetaParam(arr) {
-        //  会主动把  引号 去掉
         for (const iterator of arr) {
             if (iterator.startsWith('-m')) {
                 return iterator.slice(2).toString();
@@ -482,33 +408,24 @@ export default {
         return false;
     }
     parserArgv(argv) {
-        // 历史遗留问题不能用库  入参就是如此奇葩
         if (argv.length === 0) {
             this.log('组件名称缺失\t ');
             return false;
         }
-        // 是不是插入父组件
         const isInsertParent = argv[2] && argv[2] === '-t';
-        // 可能会传入路径  例如  seer/dsdsd 目录路径
         if (isInsertParent) {
             if (/\//.test(argv[0])) {
-                // console.log('========================================================')
                 this.log(`${argv[0]}\t 插入父组件的不允许有路径`);
                 return false;
             }
         }
-        // banlg comName ?parentComName ?-t
         let componentName = argv[0].replace(/^\//, '').replace(/\/$/, '');
         let comPath = false;
         if (/\//.test(componentName)) {
-            // console.log('==========================================================');
-            // console.log('组件名称有斜杠路径');
-            // return false
             const index = componentName.lastIndexOf('/');
             comPath = componentName.substr(0, index);
             componentName = componentName.substr(index + 1);
         }
-        // const componentName = argv[0]
         const parentName = argv[1] && !argv[1].startsWith('-') ? uppercamelcase(argv[1]) : false;
         const metaParam = this.getMetaParam(argv);
         const ComponentName = uppercamelcase(componentName);
@@ -524,20 +441,15 @@ export default {
         };
     }
     render(template, context) {
-        // 被转义的的分隔符 { 和 } 不应该被渲染，分隔符与变量之间允许有空白字符
         const tokenReg = /(\\)?\{{([^\\{\\}\\]+)(\\)?\}}/g;
         return template.replace(tokenReg, (word, slash1, token, slash2) => {
-            // 如果有转义的\{或\}替换转义字符
             if (slash1 || slash2) {
                 return word.replace('\\', '');
             }
-            // 切割 token ,实现级联的变量也可以展开
             const variables = token.replace(/\s/g, '').split('.');
             let currentObject = context;
-            // tslint:disable-next-line:one-variable-per-declaration
             for (const item of variables) {
                 currentObject = currentObject[item];
-                // 如果当前索引的对象不存在，则直接返回<没有提供此变量>。
                 if (currentObject === undefined || currentObject === null) {
                     return '<没有提供此变量>';
                 }
@@ -549,10 +461,10 @@ export default {
         if (fs.existsSync(pathname)) {
             fs.readdirSync(pathname).forEach(file => {
                 const curPath = pathname + '/' + file;
-                if (fs.statSync(curPath).isDirectory()) { // recurse
+                if (fs.statSync(curPath).isDirectory()) {
                     this.deleteFolderRecursive(curPath);
                 }
-                else { // delete file
+                else {
                     fs.unlinkSync(curPath);
                 }
             });
@@ -568,29 +480,14 @@ export default {
         catch (error) {
             console.log(error);
         }
-        // 把错误吃掉返回文件夹
         return all;
     }
-    /**
-     *
-     *
-     * @param {String} projectRoot
-     * @param {String} filePath
-     * @returns  {Boolean} 是否存在
-     * @description 判断文件是否存在
-     */
     hasFile(projectRoot, filePath) {
         return fs.existsSync(path.join(projectRoot, filePath));
     }
     readFile(projectRoot, filePath) {
         return fs.readFileSync(path.join(projectRoot, filePath), 'utf-8');
     }
-    /**
-     *
-     *
-     * @returns
-     * @description 报错
-     */
     getException() {
         try {
             throw Error('');
@@ -601,20 +498,7 @@ export default {
     }
     log(info) {
         info = info.replace(/^(.+)(?=\t+)/, '[$1]');
-        if (!this.dev) {
-            console.log('\x1B[32m%s\x1B[39m', '☺ ' + info);
-            return;
-        }
-        const err = this.getException();
-        const stack = err.stack;
-        const regexp = /(\w+\.js):(\d+):\d+\)/g;
-        const callerFileNameAndLine = [];
-        let matches;
-        // tslint:disable-next-line:no-conditional-assignment
-        while ((matches = regexp.exec(stack)) !== null) {
-            callerFileNameAndLine.push(matches);
-        }
-        console.log('\x1B[32m%s\x1B[39m', `[${callerFileNameAndLine[2][1]}]-[${callerFileNameAndLine[2][2]}][-][-][-]` + '☺ ' + info);
+        console.log('\x1B[32m%s\x1B[39m', '☺' + info);
     }
 };
 //# sourceMappingURL=command.js.map
