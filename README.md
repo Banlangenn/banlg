@@ -38,11 +38,11 @@ Example usage:
 ``` shell
 $ banlg comName 
 OR
-banlg comName/com 
+$ banlg comName/com 
 OR
 $ banlg comName parentComName 
 OR
-$banlg comName/com parentComName
+$ banlg comName/com parentComName
 OR
 $ banlg comName parentComName -t
 OR
