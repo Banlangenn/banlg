@@ -1,10 +1,12 @@
 # banlg
 [![Build Status](https://www.travis-ci.org/Banlangenn/banlg.svg?branch=master)](https://www.travis-ci.org/Banlangenn/banlg) [![codecov](https://codecov.io/gh/Banlangenn/banlg/branch/master/graph/badge.svg)](https://codecov.io/gh/Banlangenn/banlg)
 
-vue -- router -- file -- cli
- ## updata 1.0.2.x
-* 支持路径组件
+快捷创建vue组件文件以及路由文件
 
+ ## updata 1.0.22
+* 支持路径组件名称
+* 用ts重构
+* 修复若干bug
 
 ## Installation
 
