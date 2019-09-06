@@ -1,18 +1,10 @@
 # banlg
 [![Build Status](https://www.travis-ci.org/Banlangenn/banlg.svg?branch=master)](https://www.travis-ci.org/Banlangenn/banlg) [![codecov](https://codecov.io/gh/Banlangenn/banlg/branch/master/graph/badge.svg)](https://codecov.io/gh/Banlangenn/banlg)
 
+vue -- router -- file -- cli
+ ## updata 1.0.2.x
+* 支持路径组件
 
-```
-banlg  comName  ?parentComName ?-t
-根据命令
- 1.更新router配置文件
- 2.创建对应组件文件结构
- 3.可自定义vue和css 模板
- 4.接入现有项目，无需任何更改
- 5.强制统一命名风格与组件结构，保障项目规范
- 6.可撤销上次操作,让你无后顾之忧
-
-``` 
 
 ## Installation
 
