@@ -47,7 +47,7 @@ $ banlg comName/com parentComName
 OR
 $ banlg comName parentComName -t
 OR
-$ banlg re
+$ banlg -re
 ```
 ## 自定义组件模板
 项目根目录[src同级]，可自定义组件模板:`vue.bl    css.bl`，  
@@ -88,6 +88,13 @@ vue模板例子（css亦是如此）：
 * 缩减一些（微微一些）项目周期
 * 可撤销，让你无后顾之忧
 * 接入现有项目，无需任何更改
+
+- [ ]  检查根目录是否有routr.js
+- [ ]  文件末尾加回车
+- [ ]  检查组件是否存在检查一下import
+- [ ]  分好去掉  优先级不高
+- [ ]  单引号    优先级不高
+
 ## -完！
 <details>
   <summary><mark><font color=darkred>常见问题</font></mark></summary>
