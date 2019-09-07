@@ -21,6 +21,7 @@ $ yarn global add banlg
 * `parentComName <String>`: 父组件名称(可选)
 * `-t <flag>`: 是否插入当前父组件文件夹(可选)  
  :blush:? 代表可选参数
+ ---
 <u>命令和路由是有对应关系的</u>  
 
 ***banlg&ensp;-re*** 
