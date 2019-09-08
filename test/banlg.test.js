@@ -29,8 +29,8 @@ const tmps = [
     }
 ]
 const isrf = false
-const tmp = path.join(__dirname, '/../tmp')
-const projectRoot = path.join(__dirname, '/../tmp/src')
+const tmp = path.join(__dirname, './../tmp')
+const projectRoot = path.join(__dirname, './../tmp/src')
 const Command = require('./../build/lib/command')
 const fileSave = require('file-save')
 let promiseArr = []
