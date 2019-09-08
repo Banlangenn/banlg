@@ -95,16 +95,13 @@ export default {
 <style lang='scss' >
     @import './css/${componentName}.scss';
 </style>
-        `;
+`;
         const cssContent = this.hasFile(projectRoot, this.cssTemplate) ?
             this.render(this.readFile(projectRoot, this.cssTemplate), renderObject) : null ||
             `.${lowerLineComName} {
-                    
-        
-        
-        
-                    
-}`;
+
+}
+`;
         const files = [
             {
                 fileDir: isInsertParent ? `src/views/${parentName}/src/${ComponentName}.vue` : `src/views/${this.generatePath(ComponentName)}/src/main.vue`,
@@ -122,7 +119,7 @@ export default {
         if (!isInsertParent) {
             files.push({
                 fileDir: `src/views/${this.generatePath(ComponentName)}/index.js`,
-                content: `import ${ComponentName} from './src/main'\nexport default ${ComponentName}`,
+                content: `import ${ComponentName} from './src/main'\nexport default ${ComponentName}\n`,
                 fileName: 'index',
                 action: 'create'
             });
@@ -261,8 +258,8 @@ export default {
             }
         });
         const routerContent = generate(ast, {}).code
-            .replace(/\n(\n)*()*(\n)*\n/g, '\n')
-            .replace(/;(?=\n)/g, '');
+            .replace(/;(?=\n)/g, '')
+            .replace(/\n(\n)*()*(\n)*\n/g, '\n') + '\n';
         return {
             fileDir: `src/router/index.js`,
             content: routerContent,

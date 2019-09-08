@@ -18,15 +18,15 @@ const traverse = require('@babel/traverse').default
 // tslint:disable-next-line:no-var-requires
 const uppercamelcase = require('uppercamelcase');
 module.exports = class Command {
-    private name: string
-    private revokeJsonPath: string
-    private cssTemplate: string
-    private vueTemplate: string
+    private name: string;
+    private revokeJsonPath: string;
+    private cssTemplate: string;
+    private vueTemplate: string;
     private dev: boolean
-    private argv: any
-    private cwd: string
-    private projectRoot: string
-    private originCode: string
+    private argv: any;
+    private cwd: string;
+    private projectRoot: string;
+    private originCode: string;
     constructor(options) {
         options = options || {}
         this.name = options.name || 'banlg'
@@ -101,7 +101,7 @@ module.exports = class Command {
         }
         // console.log('--------------------vueTemplate------------------------------------')
         // console.log(this.readFile(projectRoot, this.vueTemplate))
-        const vueContent = this.hasFile(projectRoot, this.vueTemplate) ?
+        const vueContent:string = this.hasFile(projectRoot, this.vueTemplate) ?
             this.render(this.readFile(projectRoot, this.vueTemplate) , renderObject) : null ||
 `<template>
     <div class="${lowerLineComName}">
@@ -127,7 +127,7 @@ export default {
 <style lang='scss' >
     @import './css/${componentName}.scss';
 </style>
-        `
+`
         // console.log('================cssTemplate======================')
         // console.log(this.readFile(projectRoot, this.cssTemplate))
         
@@ -335,10 +335,11 @@ export default {
         /* 选项 */
         //  看不懂  直接自己用正则去掉
         }).code
-        // 去空行
-            .replace(/\n(\n)*()*(\n)*\n/g, '\n')
         // 去行尾分号
-            .replace(/;(?=\n)/g, '') + '\n'
+        .replace(/;(?=\n)/g, '') 
+        // 去空行
+        .replace(/\n(\n)*()*(\n)*\n/g, '\n') + '\n'
+   
        
         return  {
             fileDir: `src/router/index.js`,
