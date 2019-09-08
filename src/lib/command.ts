@@ -134,12 +134,9 @@ export default {
         const cssContent = this.hasFile(projectRoot,this.cssTemplate) ?
             this.render(this.readFile(projectRoot, this.cssTemplate) , renderObject) : null ||
 `.${lowerLineComName} {
-                    
-        
-        
-        
-                    
-}`
+
+}
+`
 
     // 路径 问题  1.  普通组件  直接拼接就行了 2 父组件内
         
@@ -162,7 +159,7 @@ export default {
             files.push({
                 fileDir: `src/views/${this.generatePath(ComponentName)}/index.js`,
                 content:
-                `import ${ComponentName} from './src/main'\nexport default ${ComponentName}`,
+                `import ${ComponentName} from './src/main'\nexport default ${ComponentName}\n`,
                 fileName:'index',
                 action: 'create'
             })
@@ -341,7 +338,7 @@ export default {
         // 去空行
             .replace(/\n(\n)*()*(\n)*\n/g, '\n')
         // 去行尾分号
-            .replace(/;(?=\n)/g, '')
+            .replace(/;(?=\n)/g, '') + '\n'
        
         return  {
             fileDir: `src/router/index.js`,
