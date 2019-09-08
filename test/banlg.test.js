@@ -60,7 +60,7 @@ describe('test/init.test.js', () => {
     // 文件是否存在 
     it('banlg  banlanGen：没有src文件目录下', async () => {
         await command.run( path.join(__dirname, './'),['banlanGen'])
-        promiseArr.shift()() // src
+        await promiseArr.shift()() // src
     })
     it('banlg banlanGen： 没有views文件夹', async () => {
         await command.run(projectRoot, ['banlanGen'])
@@ -73,11 +73,11 @@ describe('test/init.test.js', () => {
     })  
 
     // 业务测试
-    it('banlg  没有组件名称：创建组件', async  () =>{
+    it('banlg  没有组件名称：创建组件', async () =>{
         await command.run(projectRoot)
     })
 
-    it('banlg banlanGen', async  () => {
+    it('banlg banlanGen', async () => {
         await command.run(projectRoot, ['banlanGen'])
         assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/src/css/banlanGen.scss')))
         assert(fs.existsSync(path.join(command.projectRoot, 'src/views/BanlanGen/index.js')))
